@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Chris Umphlett">
+    <meta name="description" content="Chris Umphlett&#39;s personal website">
+    <meta name="keywords" content="data science,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="LibraryThing.Rmd"/>
+<meta name="twitter:description" content="For many years I used a web site called Shelfari to track my reading and wish list. This was eventually swallowed by Amazon and merged with Goodreads. For reasons I cannot remember now I did not like Goodreads and ended up switching to a service called LibraryThing that created a conversion process to get the Shelfari data in there. I haven’t used it as faithfully as Shelfari and only recently started marking dates when I completed books."/>
+
+
+    <base href="/posts/librarything-rmd/">
+    <title>
+  LibraryThing.Rmd · Chris Umphlett
+</title>
+
+    <link rel="canonical" href="/posts/librarything-rmd/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="/css/coder.min.ac37073bc2826cd28ef57364a9fe339de7ebcb26dafc22fd832cb35cf5b1d048.css" integrity="sha256-rDcHO8KCbNKO9XNkqf4znefryyba/CL9gyyzXPWx0Eg=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="/">
+      Chris Umphlett
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/projects/">Projects</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/contact/">Contact me</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">LibraryThing.Rmd</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-01-23T00:00:00Z'>
+                January 2312, 23019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              3 minutes read
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        
+
+
+<p>For many years I used a web site called Shelfari to track my reading and wish list. This was eventually swallowed by Amazon and merged with Goodreads. For reasons I cannot remember now I did not like Goodreads and ended up switching to a service called LibraryThing that created a conversion process to get the Shelfari data in there. I haven’t used it as faithfully as Shelfari and only recently started marking dates when I completed books.</p>
+<p>I do have enough data however to start trying out some techniques I do not use in my day-job, like working with API’s, non-tibble data structures and more unique visualizations. As I began working with the <a href="https://wiki.librarything.com/index.php/LibraryThing_JSON_Books_API">LibraryThing JSON data</a> I had a difficult time converting it from a list-in-a-list-in-a-list to a data frame. Thankfully I have a friend named Stack Overflow. I will be re-using this code for all of the work I do on this project.</p>
+<pre class="r"><code>library(jsonlite)
+data&lt;-fromJSON(&quot;http://www.librarything.com/api_getdata.php?userid=cau83&amp;key=392812157&amp;max=1000&amp;showCollections=1&amp;responseType=json&amp;showDates=1&quot;)
+#Thanks to user @TUSHAr
+#https://stackoverflow.com/questions/51913523/extracting-list-in-a-list-in-a-list-to-build-dataframe-in-r
+booksdf&lt;-Reduce(function(x,y){rbind(x,y)},
+               Map(function(x){
+                 lenofelements = length(x)
+                 
+                 if(lenofelements&gt;20){
+                   if(!is.null(x$startfinishdates$started_date)){
+                     started_date = x$startfinishdates$started_date
+                   }else{
+                     started_date=NA
+                   }
+                   
+                   if(!is.null(x$startfinishdates$started_stamp)){
+                     started_stamp = x$startfinishdates$started_date
+                   }else{
+                     started_stamp=NA
+                   }
+                   
+                   if(!is.null(x$startfinishdates$finished_date)){
+                     finished_date = x$startfinishdates$finished_date
+                   }else{
+                     finished_date=NA
+                   }
+                   
+                   if(!is.null(x$startfinishdates$finished_stamp)){
+                     finished_stamp = x$startfinishdates$finished_stamp
+                   }else{
+                     finished_stamp=NA
+                   }
+                   
+                 }else{
+                   started_stamp = NA
+                   started_date = NA
+                   finished_stamp = NA
+                   finished_date = NA
+                 }
+                 book_id = x$book_id
+                 title = x$title
+                 author = x$author_fl
+                 rating = x$rating
+                 collections = paste(unlist(x$collections),collapse = &quot;,&quot;)
+                 
+                 return(data.frame(ID=book_id,Title=title,Author=author,Rating=rating,
+                                   Collections=collections,Started_date=started_date,
+                                   Finished_date=finished_date))
+               },data$books))</code></pre>
+<div id="timeline-of-books-2018-08-22" class="section level2">
+<h2>Timeline of books (2018-08-22)</h2>
+<p>First I set out to create a timeline to show when I had completed books. I explored several paths and ended up <a href="https://cran.r-project.org/web/packages/ggrepel/vignettes/ggrepel.html">adapting a vignette from the <code>ggrepel</code> package</a> with which I was previously unfamiliar. I noticed a larger gap in my book completions than I remembered, until I remembered that we had a baby on 3/12/2018. So I added an annotation to fill all of that white space with a <del>excuse</del> reason.</p>
+<div>
+<img src="/images/Elsie.JPG" align="center">
+</div>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages ----------------------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 3.1.0     v purrr   0.2.5
+## v tibble  2.0.1     v dplyr   0.7.8
+## v tidyr   0.8.2     v stringr 1.3.1
+## v readr   1.3.1     v forcats 0.3.0</code></pre>
+<pre><code>## -- Conflicts -------------------------------------------------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter()  masks stats::filter()
+## x purrr::flatten() masks jsonlite::flatten()
+## x dplyr::lag()     masks stats::lag()</code></pre>
+<pre class="r"><code>library(ggrepel)
+library(scales)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;scales&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     discard</code></pre>
+<pre><code>## The following object is masked from &#39;package:readr&#39;:
+## 
+##     col_factor</code></pre>
+<pre class="r"><code>#Filter down to books finished since Dec 2017 when I started using date feature in LibThing
+hasdate&lt;-booksdf %&gt;% mutate(date=as.Date(Finished_date,&quot;%b %d, %Y&quot;)) %&gt;% filter(!is.na(Finished_date) &amp; date&gt;=&quot;2017-12-01&quot;) 
+#Extract just the main title (everything before colon), and add a line break with author name for display 
+hasdate$shorttitle&lt;-str_replace_all(hasdate$Title,str_sub(hasdate$Title,str_locate(hasdate$Title,&quot;:&quot;)[,1],),&quot;...&quot;)
+#if there is no colon, use original title
+hasdate$shorttitle2&lt;-coalesce(hasdate$shorttitle,as.character(hasdate$Title))
+hasdate$booktext&lt;-as.factor(paste0(hasdate$shorttitle2,&quot; - &quot;,hasdate$Author))
+levels(hasdate$booktext) &lt;- gsub(&quot; -&quot;, &quot;\n-&quot;, levels(hasdate$booktext))
+#Elsie&#39;s birth date, plus 5 more days to differentiate from another point, to show why there was a gap in reading
+birthday&lt;-as.Date(&quot;2018-03-12&quot;)+5
+ggplot(hasdate,aes(x=1,y=date)) +
+  geom_point(color = &quot;red&quot;) + theme_classic() + geom_point(color=&quot;blue&quot;,aes(y=birthday)) +
+  theme(axis.line.x  = element_blank(), axis.ticks.x = element_blank(),axis.text.x  = element_blank(),axis.title.x = element_blank()) +
+  scale_y_date(date_breaks=&quot;2 months&quot;, date_labels=&quot;%b-%y&quot;,expand=c(0.1,0)) +
+  xlim(1, 1.3) +
+  geom_text_repel(label=hasdate$booktext,nudge_x= 0.1,direction= &quot;y&quot;,hjust= 0, segment.size = 0.1) +
+  ggtitle(&quot;Timeline of book finish dates&quot;) +
+  geom_text(aes(y=birthday,label=&quot;Baby born = less reading&quot;,x=1.02),angle=45,hjust=0)</code></pre>
+<p><img src="/posts/2019-01-23-librarything-rmd_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="future-plans" class="section level2">
+<h2>Future Plans</h2>
+<p>I plan to add visualizations of where I have acquired books and the time it takes me to complete books. As time goes on and I get more data points I may add more.</p>
+</div>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>Enter a text here.</p>
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+       · 
+      [<a href="https://github.com/luizdepra/hugo-coder/tree/"></a>]
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
+
+</html>

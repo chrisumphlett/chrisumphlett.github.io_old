@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on Chris Umphlett</title>
+    <link>/posts/</link>
+    <description>Recent content in Posts on Chris Umphlett</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 23 Jan 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>LibraryThing.Rmd</title>
+      <link>/posts/librarything-rmd/</link>
+      <pubDate>Wed, 23 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/librarything-rmd/</guid>
+      <description>For many years I used a web site called Shelfari to track my reading and wish list. This was eventually swallowed by Amazon and merged with Goodreads. For reasons I cannot remember now I did not like Goodreads and ended up switching to a service called LibraryThing that created a conversion process to get the Shelfari data in there. I haven’t used it as faithfully as Shelfari and only recently started marking dates when I completed books.</description>
+    </item>
+    
+  </channel>
+</rss>

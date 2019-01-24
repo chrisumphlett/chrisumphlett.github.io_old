@@ -1,0 +1,97 @@
+---
+title: LibraryThing.Rmd
+author: Chris Umphlett
+date: '2019-01-23'
+slug: librarything-rmd
+categories: []
+tags: []
+description: ''
+externalLink: ''
+---
+For many years I used a web site called Shelfari to track my reading and wish list. This was eventually swallowed by Amazon and merged with Goodreads. For reasons I cannot remember now I did not like Goodreads and ended up switching to a service called LibraryThing that created a conversion process to get the Shelfari data in there. I haven't used it as faithfully as Shelfari and only recently started marking dates when I completed books.  
+
+I do have enough data however to start trying out some techniques I do not use in my day-job, like working with API's, non-tibble data structures and more unique visualizations. As I began working with the [LibraryThing JSON data](https://wiki.librarything.com/index.php/LibraryThing_JSON_Books_API) I had a difficult time converting it from a list-in-a-list-in-a-list to a data frame. Thankfully I have a friend named Stack Overflow. I will be re-using this code for all of the work I do on this project.
+
+
+```{r}
+library(jsonlite)
+data<-fromJSON("http://www.librarything.com/api_getdata.php?userid=cau83&key=392812157&max=1000&showCollections=1&responseType=json&showDates=1")
+#Thanks to user @TUSHAr
+#https://stackoverflow.com/questions/51913523/extracting-list-in-a-list-in-a-list-to-build-dataframe-in-r
+booksdf<-Reduce(function(x,y){rbind(x,y)},
+               Map(function(x){
+                 lenofelements = length(x)
+                 
+                 if(lenofelements>20){
+                   if(!is.null(x$startfinishdates$started_date)){
+                     started_date = x$startfinishdates$started_date
+                   }else{
+                     started_date=NA
+                   }
+                   
+                   if(!is.null(x$startfinishdates$started_stamp)){
+                     started_stamp = x$startfinishdates$started_date
+                   }else{
+                     started_stamp=NA
+                   }
+                   
+                   if(!is.null(x$startfinishdates$finished_date)){
+                     finished_date = x$startfinishdates$finished_date
+                   }else{
+                     finished_date=NA
+                   }
+                   
+                   if(!is.null(x$startfinishdates$finished_stamp)){
+                     finished_stamp = x$startfinishdates$finished_stamp
+                   }else{
+                     finished_stamp=NA
+                   }
+                   
+                 }else{
+                   started_stamp = NA
+                   started_date = NA
+                   finished_stamp = NA
+                   finished_date = NA
+                 }
+                 book_id = x$book_id
+                 title = x$title
+                 author = x$author_fl
+                 rating = x$rating
+                 collections = paste(unlist(x$collections),collapse = ",")
+                 
+                 return(data.frame(ID=book_id,Title=title,Author=author,Rating=rating,
+                                   Collections=collections,Started_date=started_date,
+                                   Finished_date=finished_date))
+               },data$books))
+```
+## Timeline of books (2018-08-22)
+First I set out to create a timeline to show when I had completed books. I explored several paths and ended up [adapting a vignette from the `ggrepel` package](https://cran.r-project.org/web/packages/ggrepel/vignettes/ggrepel.html) with which I was previously unfamiliar. I noticed a larger gap in my book completions than I remembered, until I remembered that we had a baby on 3/12/2018. So I added an annotation to fill all of that white space with a ~~excuse~~ reason.  
+
+<div><img src="/images/Elsie.JPG" align="center"></div>
+
+``` {r}
+library(tidyverse)
+library(ggrepel)
+library(scales)
+#Filter down to books finished since Dec 2017 when I started using date feature in LibThing
+hasdate<-booksdf %>% mutate(date=as.Date(Finished_date,"%b %d, %Y")) %>% filter(!is.na(Finished_date) & date>="2017-12-01") 
+#Extract just the main title (everything before colon), and add a line break with author name for display 
+hasdate$shorttitle<-str_replace_all(hasdate$Title,str_sub(hasdate$Title,str_locate(hasdate$Title,":")[,1],),"...")
+#if there is no colon, use original title
+hasdate$shorttitle2<-coalesce(hasdate$shorttitle,as.character(hasdate$Title))
+hasdate$booktext<-as.factor(paste0(hasdate$shorttitle2," - ",hasdate$Author))
+levels(hasdate$booktext) <- gsub(" -", "\n-", levels(hasdate$booktext))
+#Elsie's birth date, plus 5 more days to differentiate from another point, to show why there was a gap in reading
+birthday<-as.Date("2018-03-12")+5
+ggplot(hasdate,aes(x=1,y=date)) +
+  geom_point(color = "red") + theme_classic() + geom_point(color="blue",aes(y=birthday)) +
+  theme(axis.line.x  = element_blank(), axis.ticks.x = element_blank(),axis.text.x  = element_blank(),axis.title.x = element_blank()) +
+  scale_y_date(date_breaks="2 months", date_labels="%b-%y",expand=c(0.1,0)) +
+  xlim(1, 1.3) +
+  geom_text_repel(label=hasdate$booktext,nudge_x= 0.1,direction= "y",hjust= 0, segment.size = 0.1) +
+  ggtitle("Timeline of book finish dates") +
+  geom_text(aes(y=birthday,label="Baby born = less reading",x=1.02),angle=45,hjust=0)
+```
+
+## Future Plans
+I plan to add visualizations of where I have acquired books and the time it takes me to complete books. As time goes on and I get more data points I may add more. 
