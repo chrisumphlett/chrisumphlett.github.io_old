@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Chris Umphlett">
+    <meta name="description" content="Chris Umphlett&#39;s personal website">
+    <meta name="keywords" content="data science,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="StudentOutcomes.Rmd"/>
+<meta name="twitter:description" content="Project OverviewThis data set contains data on fictitious undergraduate students. It includes demographic information, performance and outcomes. I used R to analyze and visualize what is significantly correlated with, and potentially predictive of, undergraduate outcomes of gpa and staying in school (“Persistence”).
+There were many questions I would have asked if I could have spoken to someone who knew the data. For example, did high school GPA always exist on a six point scale?"/>
+
+
+    <base href="/posts/studentoutcomes-rmd/">
+    <title>
+  StudentOutcomes.Rmd · Chris Umphlett
+</title>
+
+    <link rel="canonical" href="/posts/studentoutcomes-rmd/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="/css/coder.min.ac37073bc2826cd28ef57364a9fe339de7ebcb26dafc22fd832cb35cf5b1d048.css" integrity="sha256-rDcHO8KCbNKO9XNkqf4znefryyba/CL9gyyzXPWx0Eg=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="/">
+      Chris Umphlett
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">StudentOutcomes.Rmd</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2018-09-05T00:00:00Z'>
+                September 512, 5099
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              10 minutes read
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        
+
+
+<div id="project-overview" class="section level2">
+<h2>Project Overview</h2>
+<p>This data set contains data on fictitious undergraduate students. It includes demographic information, performance and outcomes. I used R to analyze and visualize what is significantly correlated with, and potentially predictive of, undergraduate outcomes of gpa and staying in school (“Persistence”).<br />
+There were many questions I would have asked if I could have spoken to someone who knew the data. For example, did high school GPA always exist on a six point scale? Or is it possible that one person with a 3.9 (out of 4) was actually a better performer than someone with a 5.25 (out of 6)?</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 3.1.0     v purrr   0.2.5
+## v tibble  2.0.1     v dplyr   0.7.8
+## v tidyr   0.8.2     v stringr 1.3.1
+## v readr   1.3.1     v forcats 0.3.0</code></pre>
+<pre><code>## -- Conflicts ------------------------------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(rmarkdown)
+library(corrplot)</code></pre>
+<pre><code>## corrplot 0.84 loaded</code></pre>
+<pre class="r"><code>library(rpart)
+library(rpart.plot)
+library(effects)</code></pre>
+<pre><code>## Loading required package: carData</code></pre>
+<pre><code>## lattice theme set by effectsTheme()
+## See ?effectsTheme for details.</code></pre>
+<pre class="r"><code>library(VGAM)</code></pre>
+<pre><code>## Loading required package: stats4</code></pre>
+<pre><code>## Loading required package: splines</code></pre>
+<pre><code>## 
+## Attaching package: &#39;VGAM&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:tidyr&#39;:
+## 
+##     fill</code></pre>
+<pre class="r"><code>dat&lt;-read_csv(&quot;C:\\Users\\Chris\\Documents\\GITHUB\\chrisumphlett.github.io\\files\\studentoutcomes.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   .default = col_character(),
+##   cohort = col_double(),
+##   begin_trans_credits = col_double(),
+##   FirstTermGPA = col_double(),
+##   First_cum_passed_hours = col_double(),
+##   Persist1 = col_double(),
+##   HS_GPA = col_double(),
+##   Atmpt_Hours = col_double(),
+##   Passed_Hours = col_double(),
+##   ACT_COMP = col_double(),
+##   SAT_New = col_double(),
+##   SAT_Old = col_double()
+## )</code></pre>
+<pre><code>## See spec(...) for full column specifications.</code></pre>
+</div>
+<div id="data-exploration" class="section level2">
+<h2>Data Exploration</h2>
+<p>The file contains almost 41,000 records. A preview:</p>
+<pre class="r"><code>print.data.frame(head(dat))</code></pre>
+<pre><code>##                                    StudentID cohort Student_level Gender
+## 1 0x20963268D1921549B421E95910F2A6A7BACBF50B   2015            UN      F
+## 2 0xB0B5DE2DE70BD00D8C924D55C20134D430D8C85F   2013            UN      F
+## 3 0x37548D6A84876F27CC0F5A013C559A611AD69F45   2013            UN      F
+## 4 0xE185DC34410782DFFC74CC098040902BBE831735   2013            UN      M
+## 5 0xA78E3CAE41D4BE7EA3B82D01537199E28AC1A998   2013            UN      F
+## 6 0xEBDD644CB72F5B6B06D4385A82CCDF515B336AE1   2013            UN      F
+##   ethnicity citizenship feebased First_Gen_Adms First_Gen_FAFSA
+## 1     White    Domestic IN-STATE              Y               Y
+## 2     White    Domestic IN-STATE              N               U
+## 3     White    Domestic IN-STATE              N               N
+## 4     White    Domestic IN-STATE              N               N
+## 5     White    Domestic IN-STATE              N               U
+## 6     White    Domestic IN-STATE              N               N
+##   Entrant_Summer_Fall Pell_1st_Yr STEM_first begin_trans_credits
+## 1                   N           Y          N                   0
+## 2                   N           N          Y                   0
+## 3                   N           N          Y                   7
+## 4                   N           N          N                  16
+## 5                   N           N          N                   0
+## 6                   N           N          Y                  34
+##   FirstTermGPA First_cum_passed_hours Persist1 HS_GPA Atmpt_Hours
+## 1       3.0000                     14      100  3.750          14
+## 2       3.2500                     10      100  3.660          10
+## 3       3.2307                     20      100  3.890          13
+## 4       3.7000                     31      100  3.958          15
+## 5       2.8214                     14      100  4.089          14
+## 6       4.0000                     47      100  3.960          13
+##   Passed_Hours ACT_COMP SAT_New SAT_Old
+## 1           14       24      NA      NA
+## 2           10       23      NA      NA
+## 3           13       28      NA      NA
+## 4           15       NA      NA      NA
+## 5           14       NA      NA      NA
+## 6           13       33      NA      NA</code></pre>
+<p>I noticed that there were missing values in the SAT column and decided to check the number of NA in all columns.</p>
+<pre class="r"><code>na_count &lt;-sapply(dat, function(y) sum(length(which(is.na(y)))))
+na_count &lt;- data.frame(na_count)
+print.data.frame(na_count)</code></pre>
+<pre><code>##                        na_count
+## StudentID                     0
+## cohort                        0
+## Student_level                 0
+## Gender                        0
+## ethnicity                     0
+## citizenship                   0
+## feebased                      1
+## First_Gen_Adms                0
+## First_Gen_FAFSA               0
+## Entrant_Summer_Fall           0
+## Pell_1st_Yr                   0
+## STEM_first                    0
+## begin_trans_credits           0
+## FirstTermGPA               8935
+## First_cum_passed_hours        0
+## Persist1                    129
+## HS_GPA                     6693
+## Atmpt_Hours                 308
+## Passed_Hours                308
+## ACT_COMP                  16961
+## SAT_New                   35862
+## SAT_Old                   36117</code></pre>
+<p>Because of the high number of missing in the entrance exams I decided to ignore those columns. There are also many GPA values missing, both high school (an important explanatory feature) and college gpa (one of the outcomes I want to evaluate). I dropped all rows that had any NA, leaving 26,550 of 40,871.</p>
+<p>I also re-coded some of the columns based on some initial decision tree analysis that I did (not shown). I re-named so columns to be more self-explanatory, changed some column types to factors, and dropped some columns that I did not want to include in my final trees. This included (not limited to)<br />
+* <strong>Ethnicity:</strong> I found that generally the categories shown in the case statement below were being grouped together. A complete list of ethnicities is below.<br />
+* <strong>Transfer credits:</strong> decision trees were generally splitting this at 2 or 2.5 hours.<br />
+* <strong>First semester attempted hours:</strong> Changed from being numeric to binary indicator of whether or not the student attempted what I assumed to be a full load (12 hours)<br />
+* <strong>FirstSemPassHrs:</strong> Derived how many hours they passed as the difference between the student’s cumulative hours after first semester and their transfer hours</p>
+<pre class="r"><code>#ethnicities
+unique(dat$ethnicity)</code></pre>
+<pre><code>## [1] &quot;White&quot;           &quot;BLANK&quot;           &quot;Black&quot;           &quot;Hispanic&quot;       
+## [5] &quot;Multiple&quot;        &quot;Asian/Hawaii/PI&quot; &quot;Amer Ind&quot;        &quot;INTERNATIONAL&quot;</code></pre>
+<pre class="r"><code>#recoding
+dat2&lt;-dat %&gt;% select(-SAT_New,-SAT_Old,-ACT_COMP) %&gt;% 
+  drop_na() %&gt;%
+  filter(Student_level==&quot;UN&quot;,ethnicity!=&quot;BLANK&quot;) %&gt;% 
+  mutate(
+    TferCredits2.5=as.factor(ifelse(begin_trans_credits&gt;=2.5,&quot;Y&quot;,&quot;N&quot;)),
+    InState=as.factor(ifelse(feebased==&quot;IN-STATE&quot;,&quot;Y&quot;,&quot;N&quot;)),
+    entry.year=as.factor(cohort),
+    WhiteAsianIntl=as.factor(case_when(
+        ethnicity==&quot;White&quot; | ethnicity==&quot;Asian/Hawaii/PI&quot; | ethnicity==&quot;INTERNATIONAL&quot; ~ &quot;Y&quot;,
+        TRUE ~ &quot;N&quot;)), 
+    PellGrant=as.factor(Pell_1st_Yr),
+    FirstSemHrs12=as.factor(ifelse(Atmpt_Hours&gt;=12,&quot;Y&quot;,&quot;N&quot;)),
+    gender=as.factor(Gender),
+    persists=as.factor(Persist1/100),Persists=Persist1,
+    FirstSemPassHrs=First_cum_passed_hours-begin_trans_credits,
+    FirstCollege=as.factor(First_Gen_FAFSA)
+  ) %&gt;% 
+  select(-Persist1,-First_cum_passed_hours,Passed_Hours,-cohort)</code></pre>
+<p>This shows correlations between the numeric variables:</p>
+<pre class="r"><code>datnum&lt;-dat2 %&gt;% select_if(is.numeric) 
+corrplot(cor(datnum))</code></pre>
+<p><img src="/posts/2019-01-24-studentoutcomes-rmd_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</div>
+<div id="factor-reduction-using-decision-tree" class="section level2">
+<h2>Factor reduction using Decision Tree</h2>
+<p>Then I constructed decision trees on my two primary outcomes of interest: First semester GPA, and persistence (did student come back to school for their sophomore year). Smaller values of the “complexity parameter” (cp) in <em>rpart</em> lead to more complex trees (more splitting). I arrived at the parameters I used for each through trial and error. My initial observations:</p>
+<p><strong>GPA</strong><br />
+* High school performance (GPA primarily, but also transfer credits) appears to be highly associated with first semester GPA. Transfer credits<br />
+* Demographics also play a role, though a statistical model should be used to control for other things associated with one’s demographics.</p>
+<p><strong>Persistence</strong><br />
+* First year college performance is most influential with one’s decision to return to school<br />
+* In-state students are more likely to return to school * 2015 had lower persistence for some reason</p>
+<pre class="r"><code>#GPA
+tree&lt;-rpart(FirstTermGPA~entry.year + gender + WhiteAsianIntl + InState + First_Gen_Adms + FirstCollege + Entrant_Summer_Fall + PellGrant + STEM_first + TferCredits2.5 + HS_GPA + FirstSemHrs12
+    ,cp=0.003,data=dat2)
+#plot with rpart.plot
+prp(tree,type=5,branch=1,fallen.leaves = TRUE,digits=3,varlen=0,
+    box.palette=&quot;auto&quot;,pal.thresh = 3,leaf.round=1,tweak=1.2)</code></pre>
+<p><img src="/posts/2019-01-24-studentoutcomes-rmd_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<pre class="r"><code>##HS GPA, pell grant status, ethnicity, transfer credits
+#persistence
+tree&lt;-rpart(Persists~gender+WhiteAsianIntl+InState
+            +FirstCollege+Entrant_Summer_Fall+PellGrant
+            +STEM_first+TferCredits2.5+HS_GPA+FirstSemHrs12+FirstSemPassHrs
+            +FirstTermGPA
+            ,cp=0.001,data=dat2)
+prp(tree,type=5,branch=1,fallen.leaves = TRUE,digits=3,varlen=0,
+    box.palette=&quot;auto&quot;,pal.thresh = 3,leaf.round=1,tweak=1.2)</code></pre>
+<p><img src="/posts/2019-01-24-studentoutcomes-rmd_files/figure-html/unnamed-chunk-6-2.png" width="672" /></p>
+</div>
+<div id="statistical-modeling-the-relationship-between-the-important-features-and-student-outcomes" class="section level2">
+<h2>Statistical modeling the relationship between the important features and student outcomes</h2>
+<p>I created a statistical model for each outcome to better estimate both the significance and impact of the performance and demographic features.</p>
+<p><strong>GPA</strong><br />
+I used Tobit which is a censored regression. The data is both left-censored (because a zero is the lowest possible GPA, even though one person could average a 50 and another person a 30) and right-censored (four is the max but one student may have taken tougher courses than another). Basic OLS assumes that the outcome is continuous which is not the case here. Tobit regression is an appropriate model. I had not done Tobit in R before and used <a href="https://stats.idre.ucla.edu/r/dae/tobit-models/">this site</a> as a guide to implement with the vglm() function from the <em>VGAM</em> package.<br />
+All of the included variables were significant. The demographic variables had smaller impacts on GPA than performance (eg, Males had a lower gpa by 0.1 points than females while an increase of 1 point in HS GPA is associated with an increase of 0.84 points in college gpa).</p>
+<pre class="r"><code>summary(m &lt;- vglm(FirstTermGPA~ gender+WhiteAsianIntl+InState
+                  +FirstCollege+PellGrant+TferCredits2.5+HS_GPA+FirstSemHrs12,
+                  tobit(Lower=0,Upper = 4), data = dat2))</code></pre>
+<pre><code>## 
+## Call:
+## vglm(formula = FirstTermGPA ~ gender + WhiteAsianIntl + InState + 
+##     FirstCollege + PellGrant + TferCredits2.5 + HS_GPA + FirstSemHrs12, 
+##     family = tobit(Lower = 0, Upper = 4), data = dat2)
+## 
+## 
+## Pearson residuals:
+##             Min      1Q   Median     3Q    Max
+## mu       -6.817 -0.6069 -0.02792 0.6062  3.201
+## loge(sd) -1.120 -0.7804 -0.56003 0.1815 28.841
+## 
+## Coefficients: 
+##                  Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept):1   -0.397691   0.055272  -7.195 6.24e-13 ***
+## (Intercept):2   -0.338908   0.005165 -65.617  &lt; 2e-16 ***
+## genderM         -0.113078   0.009111 -12.411  &lt; 2e-16 ***
+## WhiteAsianIntlY  0.147717   0.012944  11.412  &lt; 2e-16 ***
+## InStateY         0.102720   0.012819   8.013 1.12e-15 ***
+## FirstCollegeO   -0.266055   0.028263  -9.413  &lt; 2e-16 ***
+## FirstCollegeU    0.099352   0.011889   8.357  &lt; 2e-16 ***
+## FirstCollegeY   -0.143508   0.014656  -9.792  &lt; 2e-16 ***
+## PellGrantY      -0.157731   0.012291 -12.833  &lt; 2e-16 ***
+## TferCredits2.5Y  0.173627   0.009749  17.810  &lt; 2e-16 ***
+## HS_GPA           0.848412   0.014385  58.980  &lt; 2e-16 ***
+## FirstSemHrs12Y   0.340961   0.025924  13.152  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Number of linear predictors:  2 
+## 
+## Names of linear predictors: mu, loge(sd)
+## 
+## Log-likelihood: -28332.96 on 53092 degrees of freedom
+## 
+## Number of iterations: 8 
+## 
+## No Hauck-Donner effect found in any of the estimates</code></pre>
+<p><strong>Persistence</strong><br />
+Since persistence is binary I used logistic regression. The logit results are first displayed as log odds, then converted to odds ratios, and then plotted using the <em>effects</em> package. This plot holds all other variable values at a constant level and then estimates the change in likelihood of the outcome variable along the range of actual feature values. For binary features, like gender, a simple straight line shows that women are slightly less likely to persist than men. For numeric variables like first term GPA the line can be a curve and shows how much persistence is affected by GPA.<br />
+Not all variables are statistically significant. Gender, in-state status and the performance variables are most significant. The plots show that one’s previous performance explains much more of the probability of one not returning to school.</p>
+<pre class="r"><code>#logistic regression using these vars
+mylogit &lt;- glm( persists~ gender+WhiteAsianIntl+InState
+                +FirstCollege+PellGrant
+                +TferCredits2.5+FirstSemHrs12+FirstSemPassHrs
+                +FirstTermGPA
+               , data = dat2, family = &quot;binomial&quot;)
+summary(mylogit)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = persists ~ gender + WhiteAsianIntl + InState + 
+##     FirstCollege + PellGrant + TferCredits2.5 + FirstSemHrs12 + 
+##     FirstSemPassHrs + FirstTermGPA, family = &quot;binomial&quot;, data = dat2)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.9756   0.2392   0.2912   0.3735   1.9036  
+## 
+## Coefficients:
+##                 Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)     -2.11320    0.14676 -14.399  &lt; 2e-16 ***
+## genderM          0.20517    0.05069   4.048 5.17e-05 ***
+## WhiteAsianIntlY -0.06883    0.06502  -1.059 0.289798    
+## InStateY         0.64632    0.05986  10.797  &lt; 2e-16 ***
+## FirstCollegeO   -0.20942    0.12362  -1.694 0.090257 .  
+## FirstCollegeU    0.25391    0.07225   3.514 0.000441 ***
+## FirstCollegeY   -0.17409    0.07239  -2.405 0.016177 *  
+## PellGrantY      -0.08643    0.06538  -1.322 0.186216    
+## TferCredits2.5Y  0.08767    0.05363   1.635 0.102121    
+## FirstSemHrs12Y   0.19817    0.11296   1.754 0.079363 .  
+## FirstSemPassHrs  0.10188    0.01116   9.129  &lt; 2e-16 ***
+## FirstTermGPA     0.86249    0.03824  22.555  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 14813  on 26551  degrees of freedom
+## Residual deviance: 12278  on 26540  degrees of freedom
+## AIC: 12302
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<pre class="r"><code>oddsratios&lt;-exp(cbind(OR = coef(mylogit), confint(mylogit)))</code></pre>
+<pre><code>## Waiting for profiling to be done...</code></pre>
+<pre class="r"><code>oddsratios</code></pre>
+<pre><code>##                        OR      2.5 %    97.5 %
+## (Intercept)     0.1208505 0.09068223 0.1612196
+## genderM         1.2277359 1.11182956 1.3562613
+## WhiteAsianIntlY 0.9334876 0.82119184 1.0596125
+## InStateY        1.9085055 1.69607911 2.1447406
+## FirstCollegeO   0.8110558 0.63860275 1.0370160
+## FirstCollegeU   1.2890599 1.12026901 1.4871586
+## FirstCollegeY   0.8402228 0.72972173 0.9692023
+## PellGrantY      0.9172008 0.80726497 1.0431339
+## TferCredits2.5Y 1.0916251 0.98277792 1.2127448
+## FirstSemHrs12Y  1.2191729 0.97411771 1.5170293
+## FirstSemPassHrs 1.1072474 1.08331411 1.1317495
+## FirstTermGPA    2.3690560 2.19858024 2.5541298</code></pre>
+<pre class="r"><code>plot(allEffects(mylogit))</code></pre>
+<p><img src="/posts/2019-01-24-studentoutcomes-rmd_files/figure-html/unnamed-chunk-8-1.png" width="864" /></p>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>Using data on about 25,000 (fictitious) students I found that both demographic characteristics and recent performance can help predict student outcomes. Decision tree aided in determining which features were most associated with variance in the outcomes of first semester gpa and student variance. Statistical models demonstrated that recent performance has a larger nominal impact than demographics.<br />
+Given these results my recommendations would be to target primary interventions at students with the worst recent performance (for incoming freshman, their high school performance; for other students, whatever happened in the last year or semester). Secondary interventions could target out-of-state and international students who are less likely to return, perhaps because of financial, cultural or social reasons.</p>
+</div>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>Enter a text here.</p>
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+       · 
+      [<a href="https://github.com/luizdepra/hugo-coder/tree/"></a>]
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
+
+</html>

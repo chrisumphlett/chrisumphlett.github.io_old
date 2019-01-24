@@ -1,0 +1,148 @@
+---
+title: StudentOutcomes.Rmd
+author: Chris Umphlett
+date: '2018-09-05'
+slug: studentoutcomes-rmd
+categories: []
+tags: []
+description: ''
+externalLink: ''
+---
+
+## Project Overview
+
+This data set contains data on fictitious undergraduate students. It includes demographic information, performance and outcomes. I used R to analyze and visualize what is significantly correlated with, and potentially predictive of, undergraduate outcomes of gpa and staying in school ("Persistence").  
+There were many questions I would have asked if I could have spoken to someone who knew the data. For example, did high school GPA always exist on a six point scale? Or is it possible that one person with a 3.9 (out of 4) was actually a better performer than someone with a 5.25 (out of 6)?
+
+```{r, warning=FALSE}
+library(tidyverse)
+library(rmarkdown)
+library(corrplot)
+library(rpart)
+library(rpart.plot)
+library(effects)
+library(VGAM)
+dat<-read_csv("C:\\Users\\Chris\\Documents\\GITHUB\\chrisumphlett.github.io\\files\\studentoutcomes.csv")
+```
+
+## Data Exploration
+
+The file contains almost 41,000 records. A preview:
+
+```{r}
+print.data.frame(head(dat))
+```
+
+I noticed that there were missing values in the SAT column and decided to check the number of NA in all columns.
+
+```{r}
+na_count <-sapply(dat, function(y) sum(length(which(is.na(y)))))
+na_count <- data.frame(na_count)
+print.data.frame(na_count)
+```
+
+Because of the high number of missing in the entrance exams I decided to ignore those columns. There are also many GPA values missing, both high school (an important explanatory feature) and college gpa (one of the outcomes I want to evaluate). I dropped all rows that had any NA, leaving 26,550 of 40,871.
+
+I also re-coded some of the columns based on some initial decision tree analysis that I did (not shown). I re-named so columns to be more self-explanatory, changed some column types to factors, and dropped some columns that I did not want to include in my final trees. This included (not limited to)  
+* **Ethnicity:** I found that generally the categories shown in the case statement below were being grouped together. A complete list of ethnicities is below.  
+* **Transfer credits:** decision trees were generally splitting this at 2 or 2.5 hours.  
+* **First semester attempted hours:** Changed from being numeric to binary indicator of whether or not the student attempted what I assumed to be a full load (12 hours)  
+* **FirstSemPassHrs:** Derived how many hours they passed as the difference between the student's cumulative hours after first semester and their transfer hours  
+
+```{r}
+#ethnicities
+unique(dat$ethnicity)
+#recoding
+dat2<-dat %>% select(-SAT_New,-SAT_Old,-ACT_COMP) %>% 
+  drop_na() %>%
+  filter(Student_level=="UN",ethnicity!="BLANK") %>% 
+  mutate(
+    TferCredits2.5=as.factor(ifelse(begin_trans_credits>=2.5,"Y","N")),
+    InState=as.factor(ifelse(feebased=="IN-STATE","Y","N")),
+    entry.year=as.factor(cohort),
+    WhiteAsianIntl=as.factor(case_when(
+        ethnicity=="White" | ethnicity=="Asian/Hawaii/PI" | ethnicity=="INTERNATIONAL" ~ "Y",
+        TRUE ~ "N")), 
+    PellGrant=as.factor(Pell_1st_Yr),
+    FirstSemHrs12=as.factor(ifelse(Atmpt_Hours>=12,"Y","N")),
+    gender=as.factor(Gender),
+    persists=as.factor(Persist1/100),Persists=Persist1,
+    FirstSemPassHrs=First_cum_passed_hours-begin_trans_credits,
+    FirstCollege=as.factor(First_Gen_FAFSA)
+  ) %>% 
+  select(-Persist1,-First_cum_passed_hours,Passed_Hours,-cohort)
+```
+
+This shows correlations between the numeric variables:
+
+```{r}
+datnum<-dat2 %>% select_if(is.numeric) 
+corrplot(cor(datnum))
+```
+
+## Factor reduction using Decision Tree  
+Then I constructed decision trees on my two primary outcomes of interest: First semester GPA, and persistence (did student come back to school for their sophomore year).  Smaller values of the "complexity parameter" (cp) in *rpart* lead to more complex trees (more splitting). I arrived at the parameters I used for each through trial and error. My initial observations:
+
+**GPA**  
+* High school performance (GPA primarily, but also transfer credits) appears to be highly associated with first semester GPA. Transfer credits  
+* Demographics also play a role, though a statistical model should be used to control for other things associated with one's demographics.  
+
+**Persistence**  
+* First year college performance is most influential with one's decision to return to school  
+* In-state students are more likely to return to school
+* 2015 had lower persistence for some reason
+
+
+
+```{r}
+#GPA
+tree<-rpart(FirstTermGPA~entry.year + gender + WhiteAsianIntl + InState + First_Gen_Adms + FirstCollege + Entrant_Summer_Fall + PellGrant + STEM_first + TferCredits2.5 + HS_GPA + FirstSemHrs12
+    ,cp=0.003,data=dat2)
+#plot with rpart.plot
+prp(tree,type=5,branch=1,fallen.leaves = TRUE,digits=3,varlen=0,
+    box.palette="auto",pal.thresh = 3,leaf.round=1,tweak=1.2)
+##HS GPA, pell grant status, ethnicity, transfer credits
+#persistence
+tree<-rpart(Persists~gender+WhiteAsianIntl+InState
+            +FirstCollege+Entrant_Summer_Fall+PellGrant
+            +STEM_first+TferCredits2.5+HS_GPA+FirstSemHrs12+FirstSemPassHrs
+            +FirstTermGPA
+            ,cp=0.001,data=dat2)
+prp(tree,type=5,branch=1,fallen.leaves = TRUE,digits=3,varlen=0,
+    box.palette="auto",pal.thresh = 3,leaf.round=1,tweak=1.2)
+```
+
+## Statistical modeling the relationship between the important features and student outcomes  
+
+I created a statistical model for each outcome to better estimate both the significance and impact of the performance and demographic features.
+
+**GPA**  
+I used Tobit which is a censored regression. The data is both left-censored (because a zero is the lowest possible GPA, even though one person could average a 50 and another person a 30) and right-censored (four is the max but one student may have taken tougher courses than another). Basic OLS assumes that the outcome is continuous which is not the case here. Tobit regression is an appropriate model. I had not done Tobit in R before and used [this site](https://stats.idre.ucla.edu/r/dae/tobit-models/) as a guide to implement with the vglm() function from the *VGAM* package.  
+All of the included variables were significant. The demographic variables had smaller impacts on GPA than performance (eg, Males had a lower gpa by 0.1 points than females while an increase of 1 point in HS GPA is associated with an increase of 0.84 points in college gpa).
+
+```{r}
+summary(m <- vglm(FirstTermGPA~ gender+WhiteAsianIntl+InState
+                  +FirstCollege+PellGrant+TferCredits2.5+HS_GPA+FirstSemHrs12,
+                  tobit(Lower=0,Upper = 4), data = dat2))
+```
+
+**Persistence**  
+Since persistence is binary I used logistic regression. The logit results are first displayed as log odds, then converted to odds ratios, and then plotted using the *effects* package. This plot holds all other variable values at a constant level and then estimates the change in likelihood of the outcome variable along the range of actual feature values. For binary features, like gender, a simple straight line shows that women are slightly less likely to persist than men. For numeric variables like first term GPA the line can be a curve and shows how much persistence is affected by GPA.  
+Not all variables are statistically significant. Gender, in-state status and the performance variables are most significant. The plots show that one's previous performance explains much more of the probability of one not returning to school.  
+
+```{r, fig.width=9, fig.height=8}
+#logistic regression using these vars
+mylogit <- glm( persists~ gender+WhiteAsianIntl+InState
+                +FirstCollege+PellGrant
+                +TferCredits2.5+FirstSemHrs12+FirstSemPassHrs
+                +FirstTermGPA
+               , data = dat2, family = "binomial")
+summary(mylogit)
+oddsratios<-exp(cbind(OR = coef(mylogit), confint(mylogit)))
+oddsratios
+plot(allEffects(mylogit))
+```
+
+## Summary  
+Using data on about 25,000 (fictitious) students I found that both demographic characteristics and recent performance can help predict student outcomes. Decision tree aided in determining which features were most associated with variance in the outcomes of first semester gpa and student variance. Statistical models demonstrated that recent performance has a larger nominal impact than demographics.   
+Given these results my recommendations would be to target primary interventions at students with the worst recent performance (for incoming freshman, their high school performance; for other students, whatever happened in the last year or semester). Secondary interventions could target out-of-state and international students who are less likely to return, perhaps because of financial, cultural or social reasons.
