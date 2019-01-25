@@ -1,0 +1,49 @@
+---
+title: Kindergarten Data Science
+author: Chris Umphlett
+date: '2018-10-24'
+slug: kindergarten-data-science
+categories: []
+tags: []
+description: ''
+externalLink: ''
+---
+
+Last year I taught a data science lesson to my daughter's kindergarten class. I learned that they already practice data science: in the morning they would observe the weather, record it on the computer, and then look at a visualization of the weather so far in the month. Amazing! I was able to share with them how that same process (observe/collect data, clean data, analyze data, and visualize data) is what I do at work.
+
+I walked them through two data analyses. First we recorded their birth months and then discussed which months and seasons had the most, and fewest, birthdays. After the lesson I passed out a blank bar chart that they used to create a chart that represented the actual birth month counts.  
+
+<div><img src="/images/pig_fox_stinky_socks.PNG" align="center"></div>  
+
+Next, we read the book *A Pig, A Fox, and Stinky Socks*.  I asked the kids which words they thought occured the most and then we looked at a wordcloud I created and compared it to their guesses.
+
+Here are the packages used to create the wordcloud with a non-standard color palette. 
+``` {r}
+library(wordcloud)
+library(RColorBrewer)
+library(plyr)
+library(dplyr)
+```
+
+The data collection process required me to type the entire book into a text file. Enjoy the first few pages of literary gold:
+```{r}
+book <- readLines("C:\\Users\\Chris\\Documents\\GITHUB\\chrisumphlett.github.io\\files\\pigfoxcorpus.txt")
+head(book)
+```
+
+The text needed to be read in as words, cleaned up to be lists of unique words and standardize the case.
+```{r}
+words<- scan("C:\\Users\\Chris\\Documents\\GITHUB\\chrisumphlett.github.io\\files\\pigfoxcorpus.txt", what="character", sep="\n")
+words <- tolower(words)
+words <- strsplit(words, "\\W")
+words <- unlist(words)
+head(words)
+```
+
+Finally, the words are counted; common words removed; and the wordcloud created.
+``` {r}
+freq<-plyr::count(words) 
+freq2<- filter(freq,x!="is",x!="and",x!="the",x!="am",x!="of",x!="a",x!="to",x!="in",x!="for",x!="i")
+pal2=brewer.pal(8,"Dark2")
+wordcloud(freq2$x,freq2$freq, random.order = FALSE,min.freq = 2,colors =pal2)
+```

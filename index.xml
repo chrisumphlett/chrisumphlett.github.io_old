@@ -6,39 +6,48 @@
     <description>Recent content on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 23 Jan 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 24 Oct 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>LibraryThing.Rmd</title>
-      <link>/posts/librarything-rmd/</link>
-      <pubDate>Wed, 23 Jan 2019 00:00:00 +0000</pubDate>
+      <title>Kindergarten Data Science</title>
+      <link>/posts/kindergarten-data-science/</link>
+      <pubDate>Wed, 24 Oct 2018 00:00:00 +0000</pubDate>
       
-      <guid>/posts/librarything-rmd/</guid>
-      <description>For many years I used a web site called Shelfari to track my reading and wish list. This was eventually swallowed by Amazon and merged with Goodreads. For reasons I cannot remember now I did not like Goodreads and ended up switching to a service called LibraryThing that created a conversion process to get the Shelfari data in there. I haven’t used it as faithfully as Shelfari and only recently started marking dates when I completed books.</description>
+      <guid>/posts/kindergarten-data-science/</guid>
+      <description>Last year I taught a data science lesson to my daughter’s kindergarten class. I learned that they already practice data science: in the morning they would observe the weather, record it on the computer, and then look at a visualization of the weather so far in the month. Amazing! I was able to share with them how that same process (observe/collect data, clean data, analyze data, and visualize data) is what I do at work.</description>
     </item>
     
     <item>
-      <title>StudentOutcomes.Rmd</title>
-      <link>/posts/studentoutcomes-rmd/</link>
+      <title>Predicting Undergrad Student Outcomes</title>
+      <link>/posts/studentoutcomes/</link>
       <pubDate>Wed, 05 Sep 2018 00:00:00 +0000</pubDate>
       
-      <guid>/posts/studentoutcomes-rmd/</guid>
+      <guid>/posts/studentoutcomes/</guid>
       <description>Project OverviewThis data set contains data on fictitious undergraduate students. It includes demographic information, performance and outcomes. I used R to analyze and visualize what is significantly correlated with, and potentially predictive of, undergraduate outcomes of gpa and staying in school (“Persistence”).
 There were many questions I would have asked if I could have spoken to someone who knew the data. For example, did high school GPA always exist on a six point scale?</description>
     </item>
     
     <item>
-      <title>Hello R Markdown</title>
-      <link>/post/2015-07-23-r-rmarkdown/</link>
-      <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
+      <title>Now</title>
+      <link>/now/</link>
+      <pubDate>Wed, 29 Aug 2018 00:00:00 +0000</pubDate>
       
-      <guid>/post/2015-07-23-r-rmarkdown/</guid>
-      <description>R MarkdownThis is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
-You can embed an R code chunk like this:
-summary(cars)## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 26.00 ## Median :15.0 Median : 36.00 ## Mean :15.4 Mean : 42.98 ## 3rd Qu.</description>
+      <guid>/now/</guid>
+      <description>Inspired by nownownow.com.
+*updated 2019-01-24 Listed below are categories that show what I&amp;rsquo;m spending most of my time doing. Ultimately, I am attempting to align these with my current vision for my career: To live in the intersection of data science and behavioral economics/decision science&amp;ndash; to be a data-driven decision scientist.
+Current projects  This web site with basic pages, with a combination of R Studio, R blogdown and Github pages.</description>
+    </item>
+    
+    <item>
+      <title>LibraryThing Reading Timeline</title>
+      <link>/posts/librarything/</link>
+      <pubDate>Wed, 22 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/librarything/</guid>
+      <description>For many years I used a web site called Shelfari to track my reading and wish list. This was eventually swallowed by Amazon and merged with Goodreads. For reasons I cannot remember now I did not like Goodreads and ended up switching to a service called LibraryThing that created a conversion process to get the Shelfari data in there. I haven’t used it as faithfully as Shelfari and only recently started marking dates when I completed books.</description>
     </item>
     
     <item>
@@ -57,24 +66,6 @@ summary(cars)## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 2
       
       <guid>/about/</guid>
       <description>When I began my career in the analytics space in 2011 it seemed important to me to gain specific, specialized knowledge in certain areas. I had previously been a &amp;ldquo;jack-of-all-trades, master of none&amp;rdquo; kind of guy and that was not where I wanted to be professionally. Business analytics became that area of focus but after eight years I know now that once you gain a certain competency in data analytics you realize that they are innumerable subdomains; I am now, once again, somewhat of a jack-of-all-trades.</description>
-    </item>
-    
-    <item>
-      <title>Projects</title>
-      <link>/projects/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/projects/</guid>
-      <description>Nothing to see here&amp;hellip; Move along!</description>
-    </item>
-    
-    <item>
-      <title>Projektowanie</title>
-      <link>/projects/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/projects/</guid>
-      <description>w budowie&amp;hellip;</description>
     </item>
     
   </channel>

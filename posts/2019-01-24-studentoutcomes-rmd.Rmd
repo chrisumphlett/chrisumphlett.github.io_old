@@ -1,8 +1,8 @@
 ---
-title: StudentOutcomes.Rmd
+title: Predicting Undergrad Student Outcomes
 author: Chris Umphlett
 date: '2018-09-05'
-slug: studentoutcomes-rmd
+slug: studentoutcomes
 categories: []
 tags: []
 description: ''

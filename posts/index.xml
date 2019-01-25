@@ -6,28 +6,37 @@
     <description>Recent content in Posts on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 23 Jan 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 24 Oct 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>LibraryThing.Rmd</title>
-      <link>/posts/librarything-rmd/</link>
-      <pubDate>Wed, 23 Jan 2019 00:00:00 +0000</pubDate>
+      <title>Kindergarten Data Science</title>
+      <link>/posts/kindergarten-data-science/</link>
+      <pubDate>Wed, 24 Oct 2018 00:00:00 +0000</pubDate>
       
-      <guid>/posts/librarything-rmd/</guid>
-      <description>For many years I used a web site called Shelfari to track my reading and wish list. This was eventually swallowed by Amazon and merged with Goodreads. For reasons I cannot remember now I did not like Goodreads and ended up switching to a service called LibraryThing that created a conversion process to get the Shelfari data in there. I haven’t used it as faithfully as Shelfari and only recently started marking dates when I completed books.</description>
+      <guid>/posts/kindergarten-data-science/</guid>
+      <description>Last year I taught a data science lesson to my daughter’s kindergarten class. I learned that they already practice data science: in the morning they would observe the weather, record it on the computer, and then look at a visualization of the weather so far in the month. Amazing! I was able to share with them how that same process (observe/collect data, clean data, analyze data, and visualize data) is what I do at work.</description>
     </item>
     
     <item>
-      <title>StudentOutcomes.Rmd</title>
-      <link>/posts/studentoutcomes-rmd/</link>
+      <title>Predicting Undergrad Student Outcomes</title>
+      <link>/posts/studentoutcomes/</link>
       <pubDate>Wed, 05 Sep 2018 00:00:00 +0000</pubDate>
       
-      <guid>/posts/studentoutcomes-rmd/</guid>
+      <guid>/posts/studentoutcomes/</guid>
       <description>Project OverviewThis data set contains data on fictitious undergraduate students. It includes demographic information, performance and outcomes. I used R to analyze and visualize what is significantly correlated with, and potentially predictive of, undergraduate outcomes of gpa and staying in school (“Persistence”).
 There were many questions I would have asked if I could have spoken to someone who knew the data. For example, did high school GPA always exist on a six point scale?</description>
+    </item>
+    
+    <item>
+      <title>LibraryThing Reading Timeline</title>
+      <link>/posts/librarything/</link>
+      <pubDate>Wed, 22 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/librarything/</guid>
+      <description>For many years I used a web site called Shelfari to track my reading and wish list. This was eventually swallowed by Amazon and merged with Goodreads. For reasons I cannot remember now I did not like Goodreads and ended up switching to a service called LibraryThing that created a conversion process to get the Shelfari data in there. I haven’t used it as faithfully as Shelfari and only recently started marking dates when I completed books.</description>
     </item>
     
   </channel>

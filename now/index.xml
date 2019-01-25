@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Nows on Chris Umphlett</title>
+    <link>/now/</link>
+    <description>Recent content in Nows on Chris Umphlett</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 29 Aug 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/now/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Now</title>
+      <link>/now/now/</link>
+      <pubDate>Wed, 29 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/now/now/</guid>
+      <description>Inspired by nownownow.com.
+*updated 2019-01-24 Listed below are categories that show what I&amp;rsquo;m spending most of my time doing. Ultimately, I am attempting to align these with my current vision for my career: To live in the intersection of data science and behavioral economics/decision science&amp;ndash; to be a data-driven decision scientist.
+Current projects  This web site with basic pages, with a combination of R Studio, R blogdown and Github pages.</description>
+    </item>
+    
+  </channel>
+</rss>

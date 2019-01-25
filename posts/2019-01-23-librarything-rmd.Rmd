@@ -1,8 +1,8 @@
 ---
-title: LibraryThing.Rmd
+title: LibraryThing Reading Timeline
 author: Chris Umphlett
-date: '2019-01-23'
-slug: librarything-rmd
+date: '2018-08-22'
+slug: librarything
 categories: []
 tags: []
 description: ''
