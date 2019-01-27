@@ -18,7 +18,7 @@ I walked them through two data analyses. First we recorded their birth months an
 Next, we read the book *A Pig, A Fox, and Stinky Socks*.  I asked the kids which words they thought occured the most and then we looked at a wordcloud I created and compared it to their guesses.
 
 Here are the packages used to create the wordcloud with a non-standard color palette. 
-``` {r}
+``` {r message=FALSE}
 library(wordcloud)
 library(RColorBrewer)
 library(plyr)
@@ -26,7 +26,7 @@ library(dplyr)
 ```
 
 The data collection process required me to type the entire book into a text file. Enjoy the first few pages of literary gold:
-```{r}
+```{r message=FALSE,warning=FALSE}
 book <- readLines("C:\\Users\\Chris\\Documents\\GITHUB\\chrisumphlett.github.io\\files\\pigfoxcorpus.txt")
 head(book)
 ```

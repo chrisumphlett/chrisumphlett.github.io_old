@@ -95,7 +95,7 @@ There were many questions I would have asked if I could have spoken to someone w
             </span>
             <span class="reading-time">
               <i class="fas fa-clock"></i>
-              10 minutes read
+              9 minutes read
             </span>
           </div>
           
@@ -109,95 +109,37 @@ There were many questions I would have asked if I could have spoken to someone w
 
 <div id="project-overview" class="section level2">
 <h2>Project Overview</h2>
-<p>This data set contains data on fictitious undergraduate students. It includes demographic information, performance and outcomes. I used R to analyze and visualize what is significantly correlated with, and potentially predictive of, undergraduate outcomes of gpa and staying in school (“Persistence”).<br />
-There were many questions I would have asked if I could have spoken to someone who knew the data. For example, did high school GPA always exist on a six point scale? Or is it possible that one person with a 3.9 (out of 4) was actually a better performer than someone with a 5.25 (out of 6)?</p>
-<pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages --------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
-<pre><code>## v ggplot2 3.1.0     v purrr   0.2.5
-## v tibble  2.0.1     v dplyr   0.7.8
-## v tidyr   0.8.2     v stringr 1.3.1
-## v readr   1.3.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts ------------------------------------------------------------------ tidyverse_conflicts() --
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
-<pre class="r"><code>library(rmarkdown)
-library(corrplot)</code></pre>
-<pre><code>## corrplot 0.84 loaded</code></pre>
-<pre class="r"><code>library(rpart)
-library(rpart.plot)
-library(effects)</code></pre>
-<pre><code>## Loading required package: carData</code></pre>
-<pre><code>## lattice theme set by effectsTheme()
-## See ?effectsTheme for details.</code></pre>
-<pre class="r"><code>library(VGAM)</code></pre>
-<pre><code>## Loading required package: stats4</code></pre>
-<pre><code>## Loading required package: splines</code></pre>
-<pre><code>## 
-## Attaching package: &#39;VGAM&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:tidyr&#39;:
-## 
-##     fill</code></pre>
-<pre class="r"><code>dat&lt;-read_csv(&quot;C:\\Users\\Chris\\Documents\\GITHUB\\chrisumphlett.github.io\\files\\studentoutcomes.csv&quot;)</code></pre>
-<pre><code>## Parsed with column specification:
-## cols(
-##   .default = col_character(),
-##   cohort = col_double(),
-##   begin_trans_credits = col_double(),
-##   FirstTermGPA = col_double(),
-##   First_cum_passed_hours = col_double(),
-##   Persist1 = col_double(),
-##   HS_GPA = col_double(),
-##   Atmpt_Hours = col_double(),
-##   Passed_Hours = col_double(),
-##   ACT_COMP = col_double(),
-##   SAT_New = col_double(),
-##   SAT_Old = col_double()
-## )</code></pre>
-<pre><code>## See spec(...) for full column specifications.</code></pre>
+<p>This data set contains data on fictitious undergraduate students. It includes demographic information, performance and outcomes. I used R to analyze and visualize what is significantly correlated with, and potentially predictive of, undergraduate outcomes of gpa and staying in school (“Persistence”).</p>
+<p>There were many questions I would have asked if I could have spoken to someone who knew the data. For example, did high school GPA always exist on a six point scale? Or is it possible that one person with a 3.9 (out of 4) was actually a better performer than someone with a 5.25 (out of 6)?</p>
 </div>
 <div id="data-exploration" class="section level2">
 <h2>Data Exploration</h2>
 <p>The file contains almost 41,000 records. A preview:</p>
-<pre class="r"><code>print.data.frame(head(dat))</code></pre>
-<pre><code>##                                    StudentID cohort Student_level Gender
-## 1 0x20963268D1921549B421E95910F2A6A7BACBF50B   2015            UN      F
-## 2 0xB0B5DE2DE70BD00D8C924D55C20134D430D8C85F   2013            UN      F
-## 3 0x37548D6A84876F27CC0F5A013C559A611AD69F45   2013            UN      F
-## 4 0xE185DC34410782DFFC74CC098040902BBE831735   2013            UN      M
-## 5 0xA78E3CAE41D4BE7EA3B82D01537199E28AC1A998   2013            UN      F
-## 6 0xEBDD644CB72F5B6B06D4385A82CCDF515B336AE1   2013            UN      F
-##   ethnicity citizenship feebased First_Gen_Adms First_Gen_FAFSA
-## 1     White    Domestic IN-STATE              Y               Y
-## 2     White    Domestic IN-STATE              N               U
-## 3     White    Domestic IN-STATE              N               N
-## 4     White    Domestic IN-STATE              N               N
-## 5     White    Domestic IN-STATE              N               U
-## 6     White    Domestic IN-STATE              N               N
-##   Entrant_Summer_Fall Pell_1st_Yr STEM_first begin_trans_credits
-## 1                   N           Y          N                   0
-## 2                   N           N          Y                   0
-## 3                   N           N          Y                   7
-## 4                   N           N          N                  16
-## 5                   N           N          N                   0
-## 6                   N           N          Y                  34
-##   FirstTermGPA First_cum_passed_hours Persist1 HS_GPA Atmpt_Hours
-## 1       3.0000                     14      100  3.750          14
-## 2       3.2500                     10      100  3.660          10
-## 3       3.2307                     20      100  3.890          13
-## 4       3.7000                     31      100  3.958          15
-## 5       2.8214                     14      100  4.089          14
-## 6       4.0000                     47      100  3.960          13
-##   Passed_Hours ACT_COMP SAT_New SAT_Old
-## 1           14       24      NA      NA
-## 2           10       23      NA      NA
-## 3           13       28      NA      NA
-## 4           15       NA      NA      NA
-## 5           14       NA      NA      NA
-## 6           13       33      NA      NA</code></pre>
+<pre><code>## Observations: 40,871
+## Variables: 22
+## $ StudentID              &lt;chr&gt; &quot;0x20963268D1921549B421E95910F2A6A7BACB...
+## $ cohort                 &lt;dbl&gt; 2015, 2013, 2013, 2013, 2013, 2013, 201...
+## $ Student_level          &lt;chr&gt; &quot;UN&quot;, &quot;UN&quot;, &quot;UN&quot;, &quot;UN&quot;, &quot;UN&quot;, &quot;UN&quot;, &quot;UN...
+## $ Gender                 &lt;chr&gt; &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;M&quot;, &quot;F&quot;, &quot;F&quot;, &quot;F&quot;, &quot;M&quot;,...
+## $ ethnicity              &lt;chr&gt; &quot;White&quot;, &quot;White&quot;, &quot;White&quot;, &quot;White&quot;, &quot;Wh...
+## $ citizenship            &lt;chr&gt; &quot;Domestic&quot;, &quot;Domestic&quot;, &quot;Domestic&quot;, &quot;Do...
+## $ feebased               &lt;chr&gt; &quot;IN-STATE&quot;, &quot;IN-STATE&quot;, &quot;IN-STATE&quot;, &quot;IN...
+## $ First_Gen_Adms         &lt;chr&gt; &quot;Y&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;,...
+## $ First_Gen_FAFSA        &lt;chr&gt; &quot;Y&quot;, &quot;U&quot;, &quot;N&quot;, &quot;N&quot;, &quot;U&quot;, &quot;N&quot;, &quot;N&quot;, &quot;U&quot;,...
+## $ Entrant_Summer_Fall    &lt;chr&gt; &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;,...
+## $ Pell_1st_Yr            &lt;chr&gt; &quot;Y&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;,...
+## $ STEM_first             &lt;chr&gt; &quot;N&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;N&quot;, &quot;N&quot;, &quot;Y&quot;, &quot;N&quot;, &quot;N&quot;,...
+## $ begin_trans_credits    &lt;dbl&gt; 0, 0, 7, 16, 0, 34, 12, 11, 7, 0, 0, 8,...
+## $ FirstTermGPA           &lt;dbl&gt; 3.0000, 3.2500, 3.2307, 3.7000, 2.8214,...
+## $ First_cum_passed_hours &lt;dbl&gt; 14, 10, 20, 31, 14, 47, 26, 21, 20, 14,...
+## $ Persist1               &lt;dbl&gt; 100, 100, 100, 100, 100, 100, 0, 100, 1...
+## $ HS_GPA                 &lt;dbl&gt; 3.750, 3.660, 3.890, 3.958, 4.089, 3.96...
+## $ Atmpt_Hours            &lt;dbl&gt; 14, 10, 13, 15, 14, 13, 14, 15, 13, 14,...
+## $ Passed_Hours           &lt;dbl&gt; 14, 10, 13, 15, 14, 13, 14, 10, 13, 14,...
+## $ ACT_COMP               &lt;dbl&gt; 24, 23, 28, NA, NA, 33, 24, 30, 30, 22,...
+## $ SAT_New                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,...
+## $ SAT_Old                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,...</code></pre>
 <p>I noticed that there were missing values in the SAT column and decided to check the number of NA in all columns.</p>
-<pre class="r"><code>na_count &lt;-sapply(dat, function(y) sum(length(which(is.na(y)))))
-na_count &lt;- data.frame(na_count)
-print.data.frame(na_count)</code></pre>
 <pre><code>##                        na_count
 ## StudentID                     0
 ## cohort                        0
@@ -222,48 +164,37 @@ print.data.frame(na_count)</code></pre>
 ## SAT_New                   35862
 ## SAT_Old                   36117</code></pre>
 <p>Because of the high number of missing in the entrance exams I decided to ignore those columns. There are also many GPA values missing, both high school (an important explanatory feature) and college gpa (one of the outcomes I want to evaluate). I dropped all rows that had any NA, leaving 26,550 of 40,871.</p>
-<p>I also re-coded some of the columns based on some initial decision tree analysis that I did (not shown). I re-named so columns to be more self-explanatory, changed some column types to factors, and dropped some columns that I did not want to include in my final trees. This included (not limited to)<br />
-* <strong>Ethnicity:</strong> I found that generally the categories shown in the case statement below were being grouped together. A complete list of ethnicities is below.<br />
-* <strong>Transfer credits:</strong> decision trees were generally splitting this at 2 or 2.5 hours.<br />
-* <strong>First semester attempted hours:</strong> Changed from being numeric to binary indicator of whether or not the student attempted what I assumed to be a full load (12 hours)<br />
-* <strong>FirstSemPassHrs:</strong> Derived how many hours they passed as the difference between the student’s cumulative hours after first semester and their transfer hours</p>
-<pre class="r"><code>#ethnicities
-unique(dat$ethnicity)</code></pre>
+<p>I also re-coded some of the columns based on some initial decision tree analysis that I did (not shown). I re-named so columns to be more self-explanatory, changed some column types to factors, and dropped some columns that I did not want to include in my final trees. This included (not limited to)</p>
+<ul>
+<li><strong>Ethnicity:</strong> I found that generally the categories shown in the case statement below were being grouped together. A complete list of ethnicities is below.<br />
+</li>
+<li><strong>Transfer credits:</strong> decision trees were generally splitting this at 2 or 2.5 hours.<br />
+</li>
+<li><strong>First semester attempted hours:</strong> Changed from being numeric to binary indicator of whether or not the student attempted what I assumed to be a full load (12 hours)<br />
+</li>
+<li><strong>FirstSemPassHrs:</strong> Derived how many hours they passed as the difference between the student’s cumulative hours after first semester and their transfer hours</li>
+</ul>
 <pre><code>## [1] &quot;White&quot;           &quot;BLANK&quot;           &quot;Black&quot;           &quot;Hispanic&quot;       
 ## [5] &quot;Multiple&quot;        &quot;Asian/Hawaii/PI&quot; &quot;Amer Ind&quot;        &quot;INTERNATIONAL&quot;</code></pre>
-<pre class="r"><code>#recoding
-dat2&lt;-dat %&gt;% select(-SAT_New,-SAT_Old,-ACT_COMP) %&gt;% 
-  drop_na() %&gt;%
-  filter(Student_level==&quot;UN&quot;,ethnicity!=&quot;BLANK&quot;) %&gt;% 
-  mutate(
-    TferCredits2.5=as.factor(ifelse(begin_trans_credits&gt;=2.5,&quot;Y&quot;,&quot;N&quot;)),
-    InState=as.factor(ifelse(feebased==&quot;IN-STATE&quot;,&quot;Y&quot;,&quot;N&quot;)),
-    entry.year=as.factor(cohort),
-    WhiteAsianIntl=as.factor(case_when(
-        ethnicity==&quot;White&quot; | ethnicity==&quot;Asian/Hawaii/PI&quot; | ethnicity==&quot;INTERNATIONAL&quot; ~ &quot;Y&quot;,
-        TRUE ~ &quot;N&quot;)), 
-    PellGrant=as.factor(Pell_1st_Yr),
-    FirstSemHrs12=as.factor(ifelse(Atmpt_Hours&gt;=12,&quot;Y&quot;,&quot;N&quot;)),
-    gender=as.factor(Gender),
-    persists=as.factor(Persist1/100),Persists=Persist1,
-    FirstSemPassHrs=First_cum_passed_hours-begin_trans_credits,
-    FirstCollege=as.factor(First_Gen_FAFSA)
-  ) %&gt;% 
-  select(-Persist1,-First_cum_passed_hours,Passed_Hours,-cohort)</code></pre>
 <p>This shows correlations between the numeric variables:</p>
-<pre class="r"><code>datnum&lt;-dat2 %&gt;% select_if(is.numeric) 
-corrplot(cor(datnum))</code></pre>
 <p><img src="/posts/2019-01-24-studentoutcomes-rmd_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 </div>
 <div id="factor-reduction-using-decision-tree" class="section level2">
 <h2>Factor reduction using Decision Tree</h2>
-<p>Then I constructed decision trees on my two primary outcomes of interest: First semester GPA, and persistence (did student come back to school for their sophomore year). Smaller values of the “complexity parameter” (cp) in <em>rpart</em> lead to more complex trees (more splitting). I arrived at the parameters I used for each through trial and error. My initial observations:</p>
-<p><strong>GPA</strong><br />
-* High school performance (GPA primarily, but also transfer credits) appears to be highly associated with first semester GPA. Transfer credits<br />
-* Demographics also play a role, though a statistical model should be used to control for other things associated with one’s demographics.</p>
-<p><strong>Persistence</strong><br />
-* First year college performance is most influential with one’s decision to return to school<br />
-* In-state students are more likely to return to school * 2015 had lower persistence for some reason</p>
+<p>Then I constructed decision trees on my two primary outcomes of interest: First semester GPA, and persistence (did student come back to school for their sophomore year). Smaller values of the “complexity parameter” (cp) in <code>rpart</code> lead to more complex trees (more splitting). I arrived at the parameters I used for each through trial and error. My initial observations:</p>
+<p><strong>GPA</strong></p>
+<ul>
+<li>High school performance (GPA primarily, but also transfer credits) appears to be highly associated with first semester GPA. Transfer credits<br />
+</li>
+<li>Demographics also play a role, though a statistical model should be used to control for other things associated with one’s demographics.</li>
+</ul>
+<p><strong>Persistence</strong></p>
+<ul>
+<li>First year college performance is most influential with one’s decision to return to school<br />
+</li>
+<li>In-state students are more likely to return to school</li>
+<li>2015 had lower persistence for some reason</li>
+</ul>
 <pre class="r"><code>#GPA
 tree&lt;-rpart(FirstTermGPA~entry.year + gender + WhiteAsianIntl + InState + First_Gen_Adms + FirstCollege + Entrant_Summer_Fall + PellGrant + STEM_first + TferCredits2.5 + HS_GPA + FirstSemHrs12
     ,cp=0.003,data=dat2)
@@ -375,20 +306,6 @@ summary(mylogit)</code></pre>
 ## Number of Fisher Scoring iterations: 6</code></pre>
 <pre class="r"><code>oddsratios&lt;-exp(cbind(OR = coef(mylogit), confint(mylogit)))</code></pre>
 <pre><code>## Waiting for profiling to be done...</code></pre>
-<pre class="r"><code>oddsratios</code></pre>
-<pre><code>##                        OR      2.5 %    97.5 %
-## (Intercept)     0.1208505 0.09068223 0.1612196
-## genderM         1.2277359 1.11182956 1.3562613
-## WhiteAsianIntlY 0.9334876 0.82119184 1.0596125
-## InStateY        1.9085055 1.69607911 2.1447406
-## FirstCollegeO   0.8110558 0.63860275 1.0370160
-## FirstCollegeU   1.2890599 1.12026901 1.4871586
-## FirstCollegeY   0.8402228 0.72972173 0.9692023
-## PellGrantY      0.9172008 0.80726497 1.0431339
-## TferCredits2.5Y 1.0916251 0.98277792 1.2127448
-## FirstSemHrs12Y  1.2191729 0.97411771 1.5170293
-## FirstSemPassHrs 1.1072474 1.08331411 1.1317495
-## FirstTermGPA    2.3690560 2.19858024 2.5541298</code></pre>
 <pre class="r"><code>plot(allEffects(mylogit))</code></pre>
 <p><img src="/posts/2019-01-24-studentoutcomes-rmd_files/figure-html/unnamed-chunk-8-1.png" width="864" /></p>
 </div>
@@ -413,7 +330,7 @@ Given these results my recommendations would be to target primary interventions 
       <footer class="footer">
   <section class="container">
     
-      <p>&#39;Be more passionate than ambitious&#39; ~ Masai Ujiri</p>
+      <p>A part of good science is to see what everyone else can see but to think what no one else has ever said. ~ Amos Tversky</p>
     
      © 2019
     

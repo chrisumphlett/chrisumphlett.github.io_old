@@ -113,23 +113,10 @@
 </div>
 <p>Next, we read the book <em>A Pig, A Fox, and Stinky Socks</em>. I asked the kids which words they thought occured the most and then we looked at a wordcloud I created and compared it to their guesses.</p>
 <p>Here are the packages used to create the wordcloud with a non-standard color palette.</p>
-<pre class="r"><code>library(wordcloud)</code></pre>
-<pre><code>## Loading required package: RColorBrewer</code></pre>
-<pre class="r"><code>library(RColorBrewer)
+<pre class="r"><code>library(wordcloud)
+library(RColorBrewer)
 library(plyr)
 library(dplyr)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;dplyr&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:plyr&#39;:
-## 
-##     arrange, count, desc, failwith, id, mutate, rename, summarise,
-##     summarize</code></pre>
-<pre><code>## The following objects are masked from &#39;package:stats&#39;:
-## 
-##     filter, lag</code></pre>
-<pre><code>## The following objects are masked from &#39;package:base&#39;:
-## 
-##     intersect, setdiff, setequal, union</code></pre>
 <p>The data collection process required me to type the entire book into a text file. Enjoy the first few pages of literary gold:</p>
 <pre class="r"><code>book &lt;- readLines(&quot;C:\\Users\\Chris\\Documents\\GITHUB\\chrisumphlett.github.io\\files\\pigfoxcorpus.txt&quot;)
 head(book)</code></pre>
@@ -164,7 +151,7 @@ wordcloud(freq2$x,freq2$freq, random.order = FALSE,min.freq = 2,colors =pal2)</c
       <footer class="footer">
   <section class="container">
     
-      <p>&#39;Be more passionate than ambitious&#39; ~ Masai Ujiri</p>
+      <p>A part of good science is to see what everyone else can see but to think what no one else has ever said. ~ Amos Tversky</p>
     
      © 2019
     

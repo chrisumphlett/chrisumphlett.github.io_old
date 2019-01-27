@@ -1,19 +1,19 @@
 ---
-title: LibraryThing Reading Timeline
-author: Chris Umphlett
+title: "LibraryThing Reading Timeline"
+author: "Chris Umphlett"
 date: '2018-08-22'
-slug: librarything
-categories: []
-tags: []
 description: ''
 externalLink: ''
+slug: librarything
+tags: []
+categories: []
 ---
 For many years I used a web site called Shelfari to track my reading and wish list. This was eventually swallowed by Amazon and merged with Goodreads. For reasons I cannot remember now I did not like Goodreads and ended up switching to a service called LibraryThing that created a conversion process to get the Shelfari data in there. I haven't used it as faithfully as Shelfari and only recently started marking dates when I completed books.  
 
 I do have enough data however to start trying out some techniques I do not use in my day-job, like working with API's, non-tibble data structures and more unique visualizations. As I began working with the [LibraryThing JSON data](https://wiki.librarything.com/index.php/LibraryThing_JSON_Books_API) I had a difficult time converting it from a list-in-a-list-in-a-list to a data frame. Thankfully I have a friend named Stack Overflow. I will be re-using this code for all of the work I do on this project.
 
 
-```{r}
+```{r, echo=FALSE}
 library(jsonlite)
 data<-fromJSON("http://www.librarything.com/api_getdata.php?userid=cau83&key=392812157&max=1000&showCollections=1&responseType=json&showDates=1")
 #Thanks to user @TUSHAr
@@ -69,7 +69,7 @@ First I set out to create a timeline to show when I had completed books. I explo
 
 <div><img src="/images/Elsie.JPG" align="center"></div>
 
-``` {r}
+``` {r, echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(ggrepel)
 library(scales)
@@ -90,8 +90,9 @@ ggplot(hasdate,aes(x=1,y=date)) +
   xlim(1, 1.3) +
   geom_text_repel(label=hasdate$booktext,nudge_x= 0.1,direction= "y",hjust= 0, segment.size = 0.1) +
   ggtitle("Timeline of book finish dates") +
-  geom_text(aes(y=birthday,label="Baby born = less reading",x=1.02),angle=45,hjust=0)
+  geom_text(aes(y=birthday,label="Baby born = less reading", x=1.02), angle=45, hjust=0)
 ```
+The timeline updates each time new content is pushed to the site.
 
 ## Future Plans
 I plan to add visualizations of where I have acquired books and the time it takes me to complete books. As time goes on and I get more data points I may add more. 
