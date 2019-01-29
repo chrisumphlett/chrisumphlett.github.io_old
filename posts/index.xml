@@ -6,10 +6,20 @@
     <description>Recent content in Posts on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 24 Oct 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 28 Jan 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Getting Unstuck: Intro</title>
+      <link>/posts/perman-unstuck-1/</link>
+      <pubDate>Mon, 28 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/perman-unstuck-1/</guid>
+      <description>I just began reading Matt Perman&amp;rsquo;s How To Get Unstuck: Breaking Free From Barriers To Your Productivity. I was pleasantly surprised by a section he added to the end of each chapter&amp;ndash; &amp;ldquo;The Unstuck Clinic&amp;rdquo;&amp;ndash; which summarizes the chapter, has an application exercise for the reader and provides resources for further reading.
+ Too often my zeal for wanting to read more becomes an obstacle to reading well. Even when I started this book a few days ago, part of the time reading the introduction was also while serving as a jungle gym for a four-year-old.</description>
+    </item>
     
     <item>
       <title>Kindergarten Data Science</title>
