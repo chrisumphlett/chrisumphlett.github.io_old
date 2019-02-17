@@ -5,7 +5,7 @@ date: '2019-02-16'
 description: ''
 externalLink: ''
 slug: the-glidepath-chart
-tags: dataviz
+tags: 
 categories: []
 ---
 
@@ -97,7 +97,7 @@ month_abbrv<-substr(strsplit(month.abb,""),4,4)  ##1 letter abbreviatio of month
 
 ```
 
-`ggplot` is used to build the final chart with the following elements:
+A `ggplot` is used to build the final chart with the following elements:
 
 * Horizontal dashed reference lines represent the target (blue) and baseline (gray). We want to move from the gray to the blue.
 * An orange dashed line will end at the blue target showing the glidepath.

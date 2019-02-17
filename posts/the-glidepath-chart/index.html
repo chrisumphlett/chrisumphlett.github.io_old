@@ -94,14 +94,11 @@
             </span>
             <span class="reading-time">
               <i class="fas fa-clock"></i>
-              5 minutes read
+              8 minutes read
             </span>
           </div>
           
-          <div class="tags">
-  <i class="fas fa-tag"></i>
-    <a href="/tags/dataviz/">dataviz</a></div>
-
+          
         </div>
       </header>
 
@@ -139,9 +136,9 @@ glimpse(dat)</code></pre>
 <pre><code>## Observations: 12
 ## Variables: 4
 ## $ month          &lt;date&gt; 2018-01-01, 2018-02-01, 2018-03-01, 2018-04-01...
-## $ sales_baseline &lt;int&gt; 107, 110, 101, 103, 109, 105, 102, 105, 109, 11...
-## $ sales_target   &lt;int&gt; 110, 116, 113, 114, 111, 113, 110, 120, 115, 11...
-## $ sales_actual   &lt;int&gt; 120, 113, 105, 116, 107, 107, 118, 124, NA, NA,...</code></pre>
+## $ sales_baseline &lt;int&gt; 107, 106, 101, 105, 104, 110, 100, 105, 100, 10...
+## $ sales_target   &lt;int&gt; 112, 118, 118, 118, 110, 117, 119, 120, 117, 11...
+## $ sales_actual   &lt;int&gt; 118, 125, 111, 106, 107, 106, 117, 113, NA, NA,...</code></pre>
 <pre class="r"><code>total_baseline&lt;-sum(sales_baseline)
 total_target&lt;-sum(sales_target)</code></pre>
 <p>Once you have a data frame similar to <code>dat</code> above, the next code chunk shows the mathematical calculations to build the target glidepath. The calculation structure is not intuitive (at least, it wasn’t to me as it took awhile to get it right) when you look at the formulas but it makes more sense once is visualized. The goal is to express the targets and current period performance in a way that shows it as a march from the baseline to the target rather than the nominal level of the metric being measured. A basic plot is shown after the calculations so that you can see the general idea behind the chart. We will make this prettier in the final step.</p>
@@ -153,15 +150,14 @@ total_target&lt;-sum(sales_target)</code></pre>
          glidepath = cum_tvb + total_baseline,
          sales_v_base = sales_actual - sales_baseline,
          cum_svb = cumsum(sales_v_base),
-         salespath = cum_svb + total_baseline,
+         actualpath = cum_svb + total_baseline,
          on_target = as.factor(ifelse(sales_actual &lt; sales_target,&quot;Miss Mthly\nTarget&quot;,&quot;Hit Mthly\nTarget&quot;)))
 
 ggplot(dat2,aes(x = month)) +
   geom_line(aes(y = total_baseline)) +
   geom_line(aes(y = total_target)) +
   geom_line(aes(y = glidepath)) +
-  geom_line(aes(y = salespath))</code></pre>
-<pre><code>## Warning: Removed 4 rows containing missing values (geom_path).</code></pre>
+  geom_line(aes(y = actualpath))</code></pre>
 <p><img src="/posts/2019-02-16-the-glidepath-chart_files/figure-html/sales_calc-1.png" width="672" /></p>
 <p>This code chunk creates the y axis scale and breaks and sets the colors that will be used.</p>
 <pre class="r"><code># define y axis scale -- want to add space above/below the baseline and target lines
@@ -178,7 +174,58 @@ hline.baseline.color&lt;-&quot;#858687&quot;
 hline.target.color&lt;-&quot;#3560e0&quot;
 
 #set colors for hit/miss target and glidepath and actual lines
-colors &lt;- c(&quot;Actual\nReduction&quot;=&quot;#0c0c0c&quot;,&quot;Target\nReduction&quot;=&quot;#e5b532&quot;,&quot;Hit Mthly\nTarget&quot;=&quot;#20aa4f&quot;, &quot;Miss Mthly\nTarget&quot;=&quot;#c40d20&quot;)</code></pre>
+colors &lt;- c(&quot;Actual\nReduction&quot;=&quot;#0c0c0c&quot;,&quot;Target\nReduction&quot;=&quot;#e5b532&quot;,&quot;Hit Mthly\nTarget&quot;=&quot;#20aa4f&quot;, &quot;Miss Mthly\nTarget&quot;=&quot;#c40d20&quot;)
+
+month_abbrv&lt;-substr(strsplit(month.abb,&quot;&quot;),4,4)  ##1 letter abbreviatio of months for x axis text</code></pre>
+<p>A <code>ggplot</code> is used to build the final chart with the following elements:</p>
+<ul>
+<li>Horizontal dashed reference lines represent the target (blue) and baseline (gray). We want to move from the gray to the blue.</li>
+<li>An orange dashed line will end at the blue target showing the glidepath.</li>
+<li>A black line shows the actual performance during the current period. <em>The YTD performance versus the target is indicated by the position of the black and orange lines. If the black line is between the orange line and the blue target line, then YTD target is being exceeded.</em></li>
+<li>Green and red points indicate whether a particular monthly target was met. A red point means the monthly target was missed, even if the performance was better than the prior year (the black line still moves in the direction of the target).</li>
+</ul>
+<pre class="r"><code>ggplot(dat2,aes(x = month)) +
+  geom_hline(yintercept = total_baseline, color = hline.baseline.color, size = 1.2, linetype = 5) +  
+  geom_hline(yintercept = total_target, color = hline.target.color, size = 1.2, linetype = 5) + 
+  geom_line(aes(y= actualpath, color = &quot;Actual\nReduction&quot;), alpha = 1, size = 1) + 
+  geom_line(aes(y = glidepath, color = &quot;Target\nReduction&quot;) ,alpha = 1, size = 1, linetype = 2) + 
+  geom_point(mapping=aes(x = month, y = actualpath, color = on_target), alpha = 1, size = 3, show.legend = FALSE) + 
+  theme_classic() + 
+  scale_colour_manual(values = colors) + 
+  scale_y_continuous(limits = c(y_min, y_max), expand = c(0, 0), breaks = breaks_y) + 
+  scale_x_date(breaks = dat2$month, labels = month_abbrv) + 
+  theme(axis.line.x = element_blank(), axis.ticks.x = element_blank(), panel.grid.major = element_blank(), axis.title = element_blank(), axis.text = element_text(size = 8), plot.title = element_text(size = 10), legend.position = &quot;none&quot;)</code></pre>
+<p><img src="/posts/2019-02-16-the-glidepath-chart_files/figure-html/glidepath_chart-1.png" width="672" /></p>
+</div>
+<div id="glidepath-chart-for-an-averaged-target-average-handle-time" class="section level3">
+<h3>Glidepath chart for an averaged target: Average Handle Time</h3>
+<p>For the AHT example I am imagining a call center with AHT of 6 minutes (360 seconds) that wants to lower it by 12 seconds, one second per month. Below the data is created.</p>
+<pre class="r"><code>aht_target&lt;-seq(from = 359, to = 337, by = -2)
+aht_actual&lt;-sample(348:360, 4, replace = TRUE)
+endofyear&lt;-c(NA,NA,NA,NA,NA,NA,NA,NA)
+aht_actual&lt;-append(aht_actual,endofyear) 
+dat&lt;-data.frame(month = seq(from = as.Date(&quot;2018-01-01&quot;), by = &quot;month&quot;, length.out = 12),aht_target,aht_actual)
+total_baseline&lt;-360
+total_target&lt;-348
+
+# Now we are going to create the glidepath
+dat2&lt;-dat %&gt;%
+  mutate(tgt_v_base = total_baseline - aht_target,
+         cum_tvb = cummean(tgt_v_base),
+         glidepath = round(total_baseline - cum_tvb,0),
+         aht_v_base = total_baseline - aht_actual,
+         cum_svb = cummean(aht_v_base),
+         actualpath = round(total_baseline - cum_svb,0),
+         on_target = as.factor(ifelse(aht_actual &gt;= aht_target,&quot;Miss Mthly\nTarget&quot;,&quot;Hit Mthly\nTarget&quot;)))</code></pre>
+<p>Another difference in these charts is that the target and baseline are flipped– the glidepath slope will be negative as the target is a reduction in AHT. This requires changes in the y axis scales and breaks.</p>
+<pre class="r"><code>y_max&lt;-round(total_baseline * 1.01, 0)
+y_min&lt;-round(total_target * 0.99, 0)
+break1&lt;-round((total_baseline - total_target) * 0.25 + total_target, 0)
+break2&lt;-round((total_baseline - total_target) * 0.5 + total_target, 0)
+break3&lt;-round((total_baseline - total_target) * 0.75 + total_target, 0)
+breaks_y&lt;-c(y_min, total_target, break1, break2, break3, total_baseline, y_max)</code></pre>
+<p>The <code>ggplot</code> code is the same. Here is the AHT glidepath chart.</p>
+<p><img src="/posts/2019-02-16-the-glidepath-chart_files/figure-html/aht_plot-1.png" width="672" /></p>
 </div>
 </div>
 
