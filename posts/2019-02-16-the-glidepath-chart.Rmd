@@ -1,0 +1,173 @@
+---
+title: 'Tracking Monthly and YTD progress towards a target: the Glidepath Chart'
+author: "Chris Umphlett"
+date: '2019-02-16'
+description: ''
+externalLink: ''
+slug: the-glidepath-chart
+tags: dataviz
+categories: []
+---
+
+While I'd love to minimize the distinction made in business according to the idiosyncracies of the calendar, I believe it's here to stay. We analysts have been spoiled by base 10. It is a bit of an annoyance to have time intervals that don't fit neatly: 7 days make a week, but 4.23 weeks make a month? There are 12 months in a year but 365.25 days? Beyond that, why do we compare 28 day periods versus 31 day periods (Jan to Feb to March)? I'd prefer everything be done with rolling weeks and days. While I have and do try to persuade people to take the climb to get there, it's not a hill on which I'm going to die.
+
+What matters more to me is that a business actually hold itself accountable to its goals. One of the things I have appreciated most working as a Data Scientist contractor for Consumers Energy is the company's corporate commitment to setting goals, measuring its progress frequently and systematically taking corrective measures if targets are not met. It measures both its monthly and year to date progress; it wants to not only meet the annual targets it sets but also hit every month, ensuring that even if things are looking good for the year a bad month is treated as an opportunity to improve.
+
+Visualizing the progress monthly and year-to-date and comparing it to last year is difficult to do with conventional line and bar charts. This traditional approach leads to six or more data series (at least previous year, current year, target for monthly and year to date) and either requires multiple charts or a very crowded single chart. I attempted to come up with a more concise way to reveal the company's progress in a single chart while avoiding a cluttered look that is difficult to interpret. Presenting, the Glidepath chart.
+
+## The Glidepath 
+
+The glidepath represents a company or individual's plan to systematically move from a previous baseline to a targeted improvement over some period of time. In this case it is a monthly plan to improve from one year to the next but the principle can be applied to different time frequencies and/or horizons. 
+
+Each month may not necessarily be an improvement on the same month year-over-year (you may not plan to beat the best performance of the previous year) but the emphasis of the plan is that however the monthly performance is aggregated, by the end of the year the glidepath leads to the new target. Then as year goes on each month's performance is measured against its monthly target, while the aggregated year-to-date is compared against the expected year-to-date up to that point. 
+
+## Building the glidepath chart by example
+
+I will demonstrate how I build the glidepath chart with two types of examples: one where the metric is a cumulative sum across the year and another where it is the annual average. For the first example we will imagine some fictitious sales goal and in the second a call center's Average Handle Time (AHT).
+
+Below are the libaries required for the final chart that will be created.
+
+``` {r setup,warning=FALSE,message=FALSE}
+library(tidyverse)
+library(scales)
+```
+
+### Glidepath chart for a cumulative sum target: Annual Sales
+
+The first step is to prep the data. I will be creating randomized data in the format that I need. You would need to get your previous period, target and current period actual performance by the appropriate frequency in a data frame with date labels. The previous period baseline and overall target should be in individual vectors. The following code creates the data frame and vectors for my made up sales data.
+
+``` {r create_sales_df}
+sales_baseline<-sample(100:110, 12, replace = TRUE)
+sales_target<-sample(110:120, 12, replace = TRUE)
+sales_actual<-sample(105:125, 8, replace = TRUE)
+endofyear<-c(NA,NA,NA,NA)
+sales_actual<-append(sales_actual,endofyear) # need to make vector have 12 elements, add NAs for months w/o sales
+
+# put these in a data frame with the months of actual
+dat<-data.frame(month = seq(from = as.Date("2018-01-01"), by = "month", length.out = 12), sales_baseline, sales_target, sales_actual)
+
+glimpse(dat)
+
+total_baseline<-sum(sales_baseline)
+total_target<-sum(sales_target)
+```
+
+Once you have a data frame similar to `dat` above, the next code chunk shows the mathematical calculations to build the target glidepath. The calculation structure is not intuitive (at least, it wasn't to me as it took awhile to get it right) when you look at the formulas but it makes more sense once is visualized. The goal is to express the targets and current period performance in a way that shows it as a march from the baseline to the target rather than the nominal level of the metric being measured. A basic plot is shown after the calculations so that you can see the general idea behind the chart. We will make this prettier in the final step.
+
+
+``` {r sales_calc, warning=FALSE}
+dat2<-dat %>%
+  mutate(cum_baseline = cumsum(sales_baseline),
+         cum_tgt = cumsum(sales_target),
+         tgt_v_base = sales_target - sales_baseline,
+         cum_tvb = cumsum(tgt_v_base),
+         glidepath = cum_tvb + total_baseline,
+         sales_v_base = sales_actual - sales_baseline,
+         cum_svb = cumsum(sales_v_base),
+         actualpath = cum_svb + total_baseline,
+         on_target = as.factor(ifelse(sales_actual < sales_target,"Miss Mthly\nTarget","Hit Mthly\nTarget")))
+
+ggplot(dat2,aes(x = month)) +
+  geom_line(aes(y = total_baseline)) +
+  geom_line(aes(y = total_target)) +
+  geom_line(aes(y = glidepath)) +
+  geom_line(aes(y = actualpath))
+```
+
+This code chunk creates the y axis scale and breaks and sets the colors that will be used.
+
+``` {r chart_format}
+# define y axis scale -- want to add space above/below the baseline and target lines
+# then starting from bottom, create 5 breaks - one at each reference line and 3 at quartiles between
+y_max<-round(total_target * 1.02, 0)
+y_min<-round(total_baseline * 0.98, 0)
+break1<-round((total_target - total_baseline) * 0.25 + total_baseline, 0)
+break2<-round((total_target - total_baseline) * 0.5 + total_baseline, 0)
+break3<-round((total_target - total_baseline) * 0.75 + total_baseline, 0)
+breaks_y<-c(y_min, total_baseline, break1, break2, break3, total_target, y_max)
+
+#set colors for baseline and target reference lines
+hline.baseline.color<-"#858687"
+hline.target.color<-"#3560e0"
+
+#set colors for hit/miss target and glidepath and actual lines
+colors <- c("Actual\nReduction"="#0c0c0c","Target\nReduction"="#e5b532","Hit Mthly\nTarget"="#20aa4f", "Miss Mthly\nTarget"="#c40d20")
+
+month_abbrv<-substr(strsplit(month.abb,""),4,4)  ##1 letter abbreviatio of months for x axis text
+
+```
+
+`ggplot` is used to build the final chart with the following elements:
+
+* Horizontal dashed reference lines represent the target (blue) and baseline (gray). We want to move from the gray to the blue.
+* An orange dashed line will end at the blue target showing the glidepath.
+* A black line shows the actual performance during the current period. *The YTD performance versus the target is indicated by the position of the black and orange lines. If the black line is between the orange line and the blue target line, then YTD target is being exceeded.*
+* Green and red points indicate whether a particular monthly target was met. A red point means the monthly target was missed, even if the performance was better than the prior year (the black line still moves in the direction of the target). 
+
+``` {r glidepath_chart, warning = FALSE}
+
+ggplot(dat2,aes(x = month)) +
+  geom_hline(yintercept = total_baseline, color = hline.baseline.color, size = 1.2, linetype = 5) +  
+  geom_hline(yintercept = total_target, color = hline.target.color, size = 1.2, linetype = 5) + 
+  geom_line(aes(y= actualpath, color = "Actual\nReduction"), alpha = 1, size = 1) + 
+  geom_line(aes(y = glidepath, color = "Target\nReduction") ,alpha = 1, size = 1, linetype = 2) + 
+  geom_point(mapping=aes(x = month, y = actualpath, color = on_target), alpha = 1, size = 3, show.legend = FALSE) + 
+  theme_classic() + 
+  scale_colour_manual(values = colors) + 
+  scale_y_continuous(limits = c(y_min, y_max), expand = c(0, 0), breaks = breaks_y) + 
+  scale_x_date(breaks = dat2$month, labels = month_abbrv) + 
+  theme(axis.line.x = element_blank(), axis.ticks.x = element_blank(), panel.grid.major = element_blank(), axis.title = element_blank(), axis.text = element_text(size = 8), plot.title = element_text(size = 10), legend.position = "none")
+
+```
+
+### Glidepath chart for an averaged target: Average Handle Time
+
+For the AHT example I am imagining a call center with AHT of 6 minutes (360 seconds) that wants to lower it by 12 seconds, one second per month. Below the data is created. 
+
+``` {r AHT_data, warning = FALSE}
+aht_target<-seq(from = 359, to = 337, by = -2)
+aht_actual<-sample(348:360, 4, replace = TRUE)
+endofyear<-c(NA,NA,NA,NA,NA,NA,NA,NA)
+aht_actual<-append(aht_actual,endofyear) 
+dat<-data.frame(month = seq(from = as.Date("2018-01-01"), by = "month", length.out = 12),aht_target,aht_actual)
+total_baseline<-360
+total_target<-348
+
+# Now we are going to create the glidepath
+dat2<-dat %>%
+  mutate(tgt_v_base = total_baseline - aht_target,
+         cum_tvb = cummean(tgt_v_base),
+         glidepath = round(total_baseline - cum_tvb,0),
+         aht_v_base = total_baseline - aht_actual,
+         cum_svb = cummean(aht_v_base),
+         actualpath = round(total_baseline - cum_svb,0),
+         on_target = as.factor(ifelse(aht_actual >= aht_target,"Miss Mthly\nTarget","Hit Mthly\nTarget")))
+```
+
+Another difference in these charts is that the target and baseline are flipped-- the glidepath slope will be negative as the target is a reduction in AHT. This requires changes in the y axis scales and breaks.
+
+``` {r aht_yaxis}
+y_max<-round(total_baseline * 1.01, 0)
+y_min<-round(total_target * 0.99, 0)
+break1<-round((total_baseline - total_target) * 0.25 + total_target, 0)
+break2<-round((total_baseline - total_target) * 0.5 + total_target, 0)
+break3<-round((total_baseline - total_target) * 0.75 + total_target, 0)
+breaks_y<-c(y_min, total_target, break1, break2, break3, total_baseline, y_max)
+```
+
+The `ggplot` code is the same. Here is the AHT glidepath chart.
+
+``` {r aht_plot, echo = FALSE, warning = FALSE}
+ggplot(dat2,aes(x = month)) +
+  geom_hline(yintercept = total_baseline, color = hline.baseline.color, size = 1.2, linetype = 5) +  
+  geom_hline(yintercept = total_target, color = hline.target.color, size = 1.2, linetype = 5) + 
+  geom_line(aes(y = actualpath, color = "Actual\nReduction"), alpha = 1, size = 1) + 
+  geom_line(aes(y = glidepath, color = "Target\nReduction") ,alpha = 1, size = 1, linetype = 2) + 
+  geom_point(mapping=aes(x = month, y = actualpath, color = on_target), alpha = 1, size = 3, show.legend = FALSE) + 
+  theme_classic() + 
+  scale_colour_manual(values = colors) + 
+  scale_y_continuous(limits = c(y_min, y_max), expand = c(0, 0), breaks = breaks_y) + 
+  scale_x_date(breaks = dat2$month, labels = month_abbrv) + 
+  theme(axis.line.x = element_blank(), axis.ticks.x = element_blank(), panel.grid.major = element_blank(), axis.title = element_blank(), axis.text = element_text(size = 8), plot.title = element_text(size = 10), legend.position = "none")
+
+```

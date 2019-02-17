@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Dataviz on Chris Umphlett</title>
+    <link>/tags/dataviz/</link>
+    <description>Recent content in Dataviz on Chris Umphlett</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sat, 16 Feb 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/dataviz/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Tracking Monthly and YTD progress towards a target: the Glidepath Chart</title>
+      <link>/posts/the-glidepath-chart/</link>
+      <pubDate>Sat, 16 Feb 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/the-glidepath-chart/</guid>
+      <description>While I’d love to minimize the distinction made in business according to the idiosyncracies of the calendar, I believe it’s here to stay. We analysts have been spoiled by base 10. It is a bit of an annoyance to have time intervals that don’t fit neatly: 7 days make a week, but 4.23 weeks make a month? There are 12 months in a year but 365.25 days? Beyond that, why do we compare 28 day periods versus 31 day periods (Jan to Feb to March)?</description>
+    </item>
+    
+  </channel>
+</rss>

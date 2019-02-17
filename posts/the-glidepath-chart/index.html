@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Chris Umphlett">
+    <meta name="description" content="Chris Umphlett&#39;s personal website">
+    <meta name="keywords" content="data science,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Tracking Monthly and YTD progress towards a target: the Glidepath Chart"/>
+<meta name="twitter:description" content="While I’d love to minimize the distinction made in business according to the idiosyncracies of the calendar, I believe it’s here to stay. We analysts have been spoiled by base 10. It is a bit of an annoyance to have time intervals that don’t fit neatly: 7 days make a week, but 4.23 weeks make a month? There are 12 months in a year but 365.25 days? Beyond that, why do we compare 28 day periods versus 31 day periods (Jan to Feb to March)?"/>
+
+
+    <base href="/posts/the-glidepath-chart/">
+    <title>
+  Tracking Monthly and YTD progress towards a target: the Glidepath Chart · Chris Umphlett
+</title>
+
+    <link rel="canonical" href="/posts/the-glidepath-chart/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="/css/coder.min.ac37073bc2826cd28ef57364a9fe339de7ebcb26dafc22fd832cb35cf5b1d048.css" integrity="sha256-rDcHO8KCbNKO9XNkqf4znefryyba/CL9gyyzXPWx0Eg=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="/">
+      Chris Umphlett
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/now/">Now</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Tracking Monthly and YTD progress towards a target: the Glidepath Chart</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-02-16T00:00:00Z'>
+                February 16, 2019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              5 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="/tags/dataviz/">dataviz</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+
+<p>While I’d love to minimize the distinction made in business according to the idiosyncracies of the calendar, I believe it’s here to stay. We analysts have been spoiled by base 10. It is a bit of an annoyance to have time intervals that don’t fit neatly: 7 days make a week, but 4.23 weeks make a month? There are 12 months in a year but 365.25 days? Beyond that, why do we compare 28 day periods versus 31 day periods (Jan to Feb to March)? I’d prefer everything be done with rolling weeks and days. While I have and do try to persuade people to take the climb to get there, it’s not a hill on which I’m going to die.</p>
+<p>What matters more to me is that a business actually hold itself accountable to its goals. One of the things I have appreciated most working as a Data Scientist contractor for Consumers Energy is the company’s corporate commitment to setting goals, measuring its progress frequently and systematically taking corrective measures if targets are not met. It measures both its monthly and year to date progress; it wants to not only meet the annual targets it sets but also hit every month, ensuring that even if things are looking good for the year a bad month is treated as an opportunity to improve.</p>
+<p>Visualizing the progress monthly and year-to-date and comparing it to last year is difficult to do with conventional line and bar charts. This traditional approach leads to six or more data series (at least previous year, current year, target for monthly and year to date) and either requires multiple charts or a very crowded single chart. I attempted to come up with a more concise way to reveal the company’s progress in a single chart while avoiding a cluttered look that is difficult to interpret. Presenting, the Glidepath chart.</p>
+<div id="the-glidepath" class="section level2">
+<h2>The Glidepath</h2>
+<p>The glidepath represents a company or individual’s plan to systematically move from a previous baseline to a targeted improvement over some period of time. In this case it is a monthly plan to improve from one year to the next but the principle can be applied to different time frequencies and/or horizons.</p>
+<p>Each month may not necessarily be an improvement on the same month year-over-year (you may not plan to beat the best performance of the previous year) but the emphasis of the plan is that however the monthly performance is aggregated, by the end of the year the glidepath leads to the new target. Then as year goes on each month’s performance is measured against its monthly target, while the aggregated year-to-date is compared against the expected year-to-date up to that point.</p>
+</div>
+<div id="building-the-glidepath-chart-by-example" class="section level2">
+<h2>Building the glidepath chart by example</h2>
+<p>I will demonstrate how I build the glidepath chart with two types of examples: one where the metric is a cumulative sum across the year and another where it is the annual average. For the first example we will imagine some fictitious sales goal and in the second a call center’s Average Handle Time (AHT).</p>
+<p>Below are the libaries required for the final chart that will be created.</p>
+<pre class="r"><code>library(tidyverse)
+library(scales)</code></pre>
+<div id="glidepath-chart-for-a-cumulative-sum-target-annual-sales" class="section level3">
+<h3>Glidepath chart for a cumulative sum target: Annual Sales</h3>
+<p>The first step is to prep the data. I will be creating randomized data in the format that I need. You would need to get your previous period, target and current period actual performance by the appropriate frequency in a data frame with date labels. The previous period baseline and overall target should be in individual vectors. The following code creates the data frame and vectors for my made up sales data.</p>
+<pre class="r"><code>sales_baseline&lt;-sample(100:110, 12, replace = TRUE)
+sales_target&lt;-sample(110:120, 12, replace = TRUE)
+sales_actual&lt;-sample(105:125, 8, replace = TRUE)
+endofyear&lt;-c(NA,NA,NA,NA)
+sales_actual&lt;-append(sales_actual,endofyear) # need to make vector have 12 elements, add NAs for months w/o sales
+
+# put these in a data frame with the months of actual
+dat&lt;-data.frame(month = seq(from = as.Date(&quot;2018-01-01&quot;), by = &quot;month&quot;, length.out = 12), sales_baseline, sales_target, sales_actual)
+
+glimpse(dat)</code></pre>
+<pre><code>## Observations: 12
+## Variables: 4
+## $ month          &lt;date&gt; 2018-01-01, 2018-02-01, 2018-03-01, 2018-04-01...
+## $ sales_baseline &lt;int&gt; 107, 110, 101, 103, 109, 105, 102, 105, 109, 11...
+## $ sales_target   &lt;int&gt; 110, 116, 113, 114, 111, 113, 110, 120, 115, 11...
+## $ sales_actual   &lt;int&gt; 120, 113, 105, 116, 107, 107, 118, 124, NA, NA,...</code></pre>
+<pre class="r"><code>total_baseline&lt;-sum(sales_baseline)
+total_target&lt;-sum(sales_target)</code></pre>
+<p>Once you have a data frame similar to <code>dat</code> above, the next code chunk shows the mathematical calculations to build the target glidepath. The calculation structure is not intuitive (at least, it wasn’t to me as it took awhile to get it right) when you look at the formulas but it makes more sense once is visualized. The goal is to express the targets and current period performance in a way that shows it as a march from the baseline to the target rather than the nominal level of the metric being measured. A basic plot is shown after the calculations so that you can see the general idea behind the chart. We will make this prettier in the final step.</p>
+<pre class="r"><code>dat2&lt;-dat %&gt;%
+  mutate(cum_baseline = cumsum(sales_baseline),
+         cum_tgt = cumsum(sales_target),
+         tgt_v_base = sales_target - sales_baseline,
+         cum_tvb = cumsum(tgt_v_base),
+         glidepath = cum_tvb + total_baseline,
+         sales_v_base = sales_actual - sales_baseline,
+         cum_svb = cumsum(sales_v_base),
+         salespath = cum_svb + total_baseline,
+         on_target = as.factor(ifelse(sales_actual &lt; sales_target,&quot;Miss Mthly\nTarget&quot;,&quot;Hit Mthly\nTarget&quot;)))
+
+ggplot(dat2,aes(x = month)) +
+  geom_line(aes(y = total_baseline)) +
+  geom_line(aes(y = total_target)) +
+  geom_line(aes(y = glidepath)) +
+  geom_line(aes(y = salespath))</code></pre>
+<pre><code>## Warning: Removed 4 rows containing missing values (geom_path).</code></pre>
+<p><img src="/posts/2019-02-16-the-glidepath-chart_files/figure-html/sales_calc-1.png" width="672" /></p>
+<p>This code chunk creates the y axis scale and breaks and sets the colors that will be used.</p>
+<pre class="r"><code># define y axis scale -- want to add space above/below the baseline and target lines
+# then starting from bottom, create 5 breaks - one at each reference line and 3 at quartiles between
+y_max&lt;-round(total_target * 1.02, 0)
+y_min&lt;-round(total_baseline * 0.98, 0)
+break1&lt;-round((total_target - total_baseline) * 0.25 + total_baseline, 0)
+break2&lt;-round((total_target - total_baseline) * 0.5 + total_baseline, 0)
+break3&lt;-round((total_target - total_baseline) * 0.75 + total_baseline, 0)
+breaks_y&lt;-c(y_min, total_baseline, break1, break2, break3, total_target, y_max)
+
+#set colors for baseline and target reference lines
+hline.baseline.color&lt;-&quot;#858687&quot;
+hline.target.color&lt;-&quot;#3560e0&quot;
+
+#set colors for hit/miss target and glidepath and actual lines
+colors &lt;- c(&quot;Actual\nReduction&quot;=&quot;#0c0c0c&quot;,&quot;Target\nReduction&quot;=&quot;#e5b532&quot;,&quot;Hit Mthly\nTarget&quot;=&quot;#20aa4f&quot;, &quot;Miss Mthly\nTarget&quot;=&quot;#c40d20&quot;)</code></pre>
+</div>
+</div>
+
+      </div>
+
+      <footer>
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>A part of good science is to see what everyone else can see but to think what no one else has ever said. ~ Amos Tversky</p>
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+       · 
+      [<a href="https://github.com/luizdepra/hugo-coder/tree/"></a>]
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-124691894-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>
