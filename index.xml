@@ -6,10 +6,20 @@
     <description>Recent content on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 16 Feb 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 21 Feb 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Getting Unstuck Chapters 4-6: Personal Effectiveness</title>
+      <link>/posts/getting-unstuck-personal-effectiveness/</link>
+      <pubDate>Thu, 21 Feb 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/getting-unstuck-personal-effectiveness/</guid>
+      <description>I am reading Matt Perman&amp;rsquo;s How to Get Unstuck and taking on the writing exercise at the end of each chapter. More information in this article on the introduction.
+Chapters 4 - 6 all discuss what Perman calls &amp;ldquo;Personal Effectiveness&amp;rdquo;. It is more than just time management: &amp;gt; personal effectiveness is the skill of leading yourself every day to get the right things done in the right way, for the right reason, and in the shortest possible amount of time.</description>
+    </item>
     
     <item>
       <title>Tracking Monthly and YTD progress towards a target: the Glidepath Chart</title>
@@ -78,7 +88,7 @@ There were many questions I would have asked if I could have spoken to someone w
       
       <guid>/now/</guid>
       <description>Inspired by nownownow.com.
-updated 2019-01-24
+updated 2019-02-21
 Listed below are categories that show what I&amp;rsquo;m spending most of my time doing. Ultimately, I am attempting to align these with my current vision for my career: To live in the intersection of data science and behavioral economics/decision science&amp;ndash; to be a data-driven decision scientist.
 Current projects  This web site with basic pages, with a combination of R Studio, R blogdown and Github pages.</description>
     </item>
