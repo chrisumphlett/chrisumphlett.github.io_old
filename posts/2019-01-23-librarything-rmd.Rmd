@@ -92,6 +92,7 @@ ggplot(hasdate,aes(x=1,y=date)) +
   ggtitle("Timeline of book finish dates") +
   geom_text(aes(y=birthday,label="Baby born = less reading", x=1.02), angle=45, hjust=0)
 ```
+
 The timeline updates each time new content is pushed to the site.
 
 ## Future Plans
