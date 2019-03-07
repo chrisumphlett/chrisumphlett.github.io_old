@@ -74,7 +74,7 @@ library(tidyverse)
 library(ggrepel)
 library(scales)
 #Filter down to books finished since Dec 2017 when I started using date feature in LibThing
-hasdate<-booksdf %>% mutate(date=as.Date(Finished_date,"%b %d, %Y")) %>% filter(!is.na(Finished_date) & date>="2017-12-01") 
+hasdate<-booksdf %>% mutate(date=as.Date(Finished_date,"%b %d, %Y")) %>% filter(!is.na(Finished_date) & date>="2017-12-01", Author != "Donald B. DeYoung") 
 #Extract just the main title (everything before colon), and add a line break with author name for display 
 hasdate$shorttitle<-str_replace_all(hasdate$Title,str_sub(hasdate$Title,str_locate(hasdate$Title,":")[,1],),"...")
 #if there is no colon, use original title

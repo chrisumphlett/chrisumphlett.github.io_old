@@ -10,14 +10,16 @@
     <meta name="keywords" content="data science,personal">
 
     <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Tags"/>
-<meta name="twitter:description" content="Chris Umphlett&#39;s personal website"/>
+<meta name="twitter:title" content="Dynamic resume&#39;s built in R with the vitae package"/>
+<meta name="twitter:description" content="A couple of months ago I came across the vitae package which was recently developed by Mitchell O’Hara Wild. I have been using the same basic resume template for over 10 years, mainly by default, but I really liked the layout offered by one of the vitae templates and the ability to build it with R Markdown turned a chore into something fun to do (keeping the resume current)."/>
 
 
-    <base href="/tags/">
-    <title>Tags · Chris Umphlett</title>
+    <base href="/posts/vitae-package/">
+    <title>
+  Dynamic resume&#39;s built in R with the vitae package · Chris Umphlett
+</title>
 
-    <link rel="canonical" href="/tags/">
+    <link rel="canonical" href="/posts/vitae-package/">
 
     <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
@@ -38,9 +40,6 @@
     <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
     <link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
 
-    
-      <link href="/tags/index.xml" rel="alternate" type="application/rss+xml" title="Chris Umphlett" />
-      <link href="/tags/index.xml" rel="feed" type="application/rss+xml" title="Chris Umphlett" />
     
 
     <meta name="generator" content="Hugo 0.53" />
@@ -79,40 +78,51 @@
 
       <div class="content">
         
-  <section class="container list">
-  <h1 class="title">Tags</h1>
-  <ul>
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Dynamic resume&#39;s built in R with the vitae package</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-03-06T00:00:00Z'>
+                March 6, 2019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              2 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="/tags/r/">R</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+
+<p>A couple of months ago I came across the <code>vitae</code> package which was recently developed by Mitchell O’Hara Wild. I have been using the same basic resume template for over 10 years, mainly by default, but I really liked the layout offered by one of the <code>vitae</code> templates and the ability to build it with R Markdown turned a chore into something fun to do (keeping the resume current).</p>
+<p>The package can be installed from CRAN with <code>install.packages('vitae')</code>. The templates originally set up were more geared towards academics with Curriculum Vitae’s (the template I am using, “awesomecv”, even had the words “Curriculum Vitae” hardcoded in the footer). I have added some features to make the package more resume-friendly at the developer’s <a href="https://github.com/ropenscilabs/vitae">Github repo</a>. To take advantage of these you will need to install the development version: <code>devtools::install_github(&quot;ropenscilabs/vitae&quot;)</code>.</p>
+<p>Check out <a href="/files/2019-03_Umphlett_resume.pdf">my resume</a> as an example of the updated “awesomecv” template, and the <a href="/files/vitae_resume_chrisumphlett.Rmd">R Markdown code that creates it</a>.</p>
+<p>What I particularly like is the top section which allows you to better define yourself and draw others attention to your portfolio/website/etc. I also took the opportunity when I switched to this format to put Skills first as I believe that in the field of data science skills are as important as experience, particularly soft skills which I didn’t draw attention to previously when I just listed software or languages at the bottom of the resume.</p>
+
+      </div>
+
+      <footer>
+        
+      </footer>
+    </article>
+
     
-    <li>
-      <span class="date">February 10, 2019</span>
-      <a class="title" href="/tags/book/">Book</a>
-    </li>
-    
-    <li>
-      <span class="date">February 3, 2019</span>
-      <a class="title" href="/tags/getting-un/">Getting Un</a>
-    </li>
-    
-    <li>
-      <span class="date">February 21, 2019</span>
-      <a class="title" href="/tags/getting-unstuck-book/">Getting Unstuck Book</a>
-    </li>
-    
-    <li>
-      <span class="date">March 6, 2019</span>
-      <a class="title" href="/tags/r/">R</a>
-    </li>
-    
-  </ul>
-  
-
-
-
-
-
-
-</section>
-
+  </section>
 
       </div>
 

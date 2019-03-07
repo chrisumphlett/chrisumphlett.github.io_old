@@ -6,10 +6,19 @@
     <description>Recent content on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 21 Feb 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 06 Mar 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Dynamic resume&#39;s built in R with the vitae package</title>
+      <link>/posts/vitae-package/</link>
+      <pubDate>Wed, 06 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/vitae-package/</guid>
+      <description>A couple of months ago I came across the vitae package which was recently developed by Mitchell O’Hara Wild. I have been using the same basic resume template for over 10 years, mainly by default, but I really liked the layout offered by one of the vitae templates and the ability to build it with R Markdown turned a chore into something fun to do (keeping the resume current).</description>
+    </item>
     
     <item>
       <title>Getting Unstuck Chapters 4-6: Personal Effectiveness</title>
