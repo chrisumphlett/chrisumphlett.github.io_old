@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>/posts/getting-unstuck-vision-mission/</loc>
+    <lastmod>2019-03-08T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/posts/vitae-package/</loc>
     <lastmod>2019-03-06T00:00:00+00:00</lastmod>
   </url>
@@ -69,7 +74,7 @@
   
   <url>
     <loc>/</loc>
-    <lastmod>2019-03-06T00:00:00+00:00</lastmod>
+    <lastmod>2019-03-08T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -81,13 +86,13 @@
   
   <url>
     <loc>/tags/getting-unstuck-book/</loc>
-    <lastmod>2019-02-21T00:00:00+00:00</lastmod>
+    <lastmod>2019-03-08T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/posts/</loc>
-    <lastmod>2019-03-06T00:00:00+00:00</lastmod>
+    <lastmod>2019-03-08T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   

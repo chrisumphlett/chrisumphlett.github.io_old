@@ -6,10 +6,20 @@
     <description>Recent content on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 06 Mar 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 08 Mar 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Getting Unstuck Chapters 7-8: The importance of vision and mission</title>
+      <link>/posts/getting-unstuck-vision-mission/</link>
+      <pubDate>Fri, 08 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/getting-unstuck-vision-mission/</guid>
+      <description>I am reading Matt Perman&amp;rsquo;s How to Get Unstuck and taking on the writing exercise at the end of each chapter. More information in this article on the introduction.
+Part 2 of the book is on Personal Leadership, Perman&amp;rsquo;s all-encompassing term for what we need to do in order to get and stay unstuck. It is what is required in order to take the personal effectiveness of chapters 4-6 and direct it appropriately.</description>
+    </item>
     
     <item>
       <title>Dynamic resume&#39;s built in R with the vitae package</title>
