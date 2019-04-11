@@ -122,6 +122,6 @@ send_message(email)
 
 Presto - the task and attachment instantly show up in Todoist.
 
-<div><img src="static/images/TD_Inbox.JPG" align="center"></div>
+<div><img src="/images/TD_Inbox.JPG" align="center"></div>
 
 <div><img src="/images/TD_comment.JPG" align="center"></div>
