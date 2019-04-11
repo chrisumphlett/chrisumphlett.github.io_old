@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>R on Chris Umphlett</title>
-    <link>/tags/r/</link>
-    <description>Recent content in R on Chris Umphlett</description>
+    <title>Sql Server on Chris Umphlett</title>
+    <link>/tags/sql-server/</link>
+    <description>Recent content in Sql Server on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Thu, 11 Apr 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/sql-server/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -18,15 +18,6 @@
       
       <guid>/posts/creating-a-car-maintenance-log-and-reminders-with-r-and-sql-server/</guid>
       <description>For years I used an Excel workbook with VBA to track our vehicles’ preventive maintenance and notify me when something was needed. This process hasn’t worked well the last couple years as the laptop with MS Office and the scheduled task is rarely left on when it is scheduled to run. I had also failed to account properly for some maintenace tasks that had never been done, but I intended to do, within a few years after purchasing the vehicles.</description>
-    </item>
-    
-    <item>
-      <title>Dynamic resume&#39;s built in R with the vitae package</title>
-      <link>/posts/vitae-package/</link>
-      <pubDate>Wed, 06 Mar 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/posts/vitae-package/</guid>
-      <description>A couple of months ago I came across the vitae package which was recently developed by Mitchell O’Hara Wild. I have been using the same basic resume template for over 10 years, mainly by default, but I really liked the layout offered by one of the vitae templates and the ability to build it with R Markdown turned a chore into something fun to do (keeping the resume current).</description>
     </item>
     
   </channel>

@@ -6,10 +6,19 @@
     <description>Recent content on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 08 Mar 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 11 Apr 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Creating a car maintenance log and reminders with R and SQL Server</title>
+      <link>/posts/creating-a-car-maintenance-log-and-reminders-with-r-and-sql-server/</link>
+      <pubDate>Thu, 11 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/creating-a-car-maintenance-log-and-reminders-with-r-and-sql-server/</guid>
+      <description>For years I used an Excel workbook with VBA to track our vehicles’ preventive maintenance and notify me when something was needed. This process hasn’t worked well the last couple years as the laptop with MS Office and the scheduled task is rarely left on when it is scheduled to run. I had also failed to account properly for some maintenace tasks that had never been done, but I intended to do, within a few years after purchasing the vehicles.</description>
+    </item>
     
     <item>
       <title>Getting Unstuck Chapters 7-8: The importance of vision and mission</title>

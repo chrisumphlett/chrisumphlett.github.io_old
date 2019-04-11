@@ -1,0 +1,121 @@
+---
+title: Creating a car maintenance log and reminders with R and SQL Server
+author: Chris Umphlett
+date: '2019-04-11'
+slug: creating-a-car-maintenance-log-and-reminders-with-r-and-sql-server
+categories: []
+tags:
+  - R
+  - SQL Server
+description: ''
+externalLink: ''
+---
+
+For years I used an Excel workbook with VBA to track our vehicles' preventive maintenance and notify me when something was needed. This process hasn't worked well the last couple years as the laptop with MS Office and the scheduled task is rarely left on when it is scheduled to run. I had also failed to account properly for some maintenace tasks that had never been done, but I intended to do, within a few years after purchasing the vehicles.
+
+Now I am working on a laptop without MS Office installed and wanting to get this process going again as I realized several things were overdue. I also needed to create a SQL Server DB on my home computer so that I could demonstrate some of the things I've been doing in my day job with R + SQL Server. Nail, meet hammer. In this article I will show how I set up a simple database and used R to create this process, and how you can do it too.
+
+# The database
+
+My database has three tables used for vehicle maintenance. These are in a database called `UMP_HH` in the `assets` schema: 
+
+1. **car_maint_log**: This contains the log of maintenance performed.
+2. **car_maint_ref**: This table provides the expectations about the maintenance I want to do, and how often. I have both a date and mileage frequency, and want to perform each maintenance item whenever the earliest one is met (in other words, do an oil change every 12 months, or 12k miles, whichever comes first. I pay for Mobil 1 Synthetic extended life oil so I do not need to do this often!)
+3. **car_maint_vehicles**: This is a list of my vehicles with the last actual odometer reading and estimated miles per day. Estimating current mileage is important for the prediction of upcoming maintenance dates.
+
+The first R chunk includes global chunk options and libraries required.
+```{r setup, warning = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(RODBC)
+library(tidyverse)
+library(gmailr)
+library(kableExtra)
+library(knitr)
+```
+
+Then the tables are imported using the `RODBC` package. A `glimpse` of each table is shown to see the table structure I built and how I use it.
+
+``` {r import_glimpse_db}
+conn <- odbcDriverConnect('driver={SQL Server};server=DESKTOP-SIIHDVF;database=UMP_HH;trusted_connection=true')
+log <- sqlQuery(conn, "select * from assets.car_maint_log") %>%
+  mutate(maint_date = as.Date(maint_date))
+ref <- sqlQuery(conn, "select * from assets.car_maint_ref")
+vehicles <- sqlQuery(conn, "select * from assets.car_maint_vehicles")
+odbcClose(conn)
+
+glimpse(log)
+glimpse(ref)
+glimpse(vehicles)
+```
+
+# Calculate estimated mileage
+
+Before I can determine upcoming maintenance I need to estimate the current mileage on my vehicles. I do this by using my daily estimate multiplied by the number of days since I last entered a real odometer reading. I have a todoist task to update the real reading about every 3 months, as well as doing it after any long road trips.
+
+``` {r est_mileage }
+vehicles2 <- vehicles %>%
+  mutate(est_mileage = as.numeric((Sys.Date() - as.Date(odometer_reading_date)) * miles_per_day + odometer_reading)) %>%
+  select(vehicle, miles_per_day, est_mileage)
+
+kable(vehicles2,
+      caption = "Vehicles' estimated mileage",
+      format.args = list(big.mark = ",")
+      ) %>% 
+  kable_styling(full_width = F)
+```
+
+# Calculate upcoming maintenance
+
+By combining the log to get the last time maintenance was performed, with my requirements and estimated mileage, I can get the estimated days until maintenance is needed based on both the time and miles requirements. The final report tells me if any maintenance items are due in the next 30 days (or overdue) according to either method. As you can see, there are a couple things I never did after buying our van that are quite overdue.
+
+``` {r calc_upcoming}
+last_maint_date <- log %>%
+  group_by(vehicle, service_name) %>%
+  summarise(most_recent_date = max(maint_date), most_recent_odom = max(mileage)) %>%
+  ungroup()
+
+upcoming_maint <- ref %>%
+  crossing(vehicles2) %>%
+  left_join(last_maint_date) %>%
+  mutate(days_left_time = round((frequency_months*30.25) - (Sys.Date() - most_recent_date),0),
+         days_left_miles = round(((frequency_miles) - (est_mileage - most_recent_odom)) / miles_per_day, 0),
+         miles_left = as.numeric(frequency_miles - (est_mileage - most_recent_odom))) %>%
+  select(vehicle, service_name, most_recent_date, most_recent_odom, est_mileage, days_left_time, days_left_miles, miles_left)
+         
+next_30_days <- upcoming_maint %>%
+  filter(days_left_miles <= 30 | days_left_time <= 30) %>%
+  select(vehicle, service_name, days_left_time, days_left_miles, miles_left)
+
+kable(next_30_days, 
+      caption = "Maintenance due in next 30 days",
+      format.args = list(big.mark = ",")) %>% 
+  kable_styling()
+```
+
+# Emailing the report to my Todoist
+
+If any items are in this final table I want a task to appear in Todoist. Tasks can be added to any project in Todoist using a unique email address provided by the app. I choose to have it sent to my Inbox project to be processed later. (The email and file paths are set in a hidden chunk). The attachment of the email gets added to the Todoist task as a comment.
+
+All of this code is also in a .R script that is linked to a weekly task in Windows Task Scheduler. The task will re-appear weekly in Todoist until I complete and log each of the needed items.
+
+
+``` {r hidden, echo = FALSE}
+use_secret_file("C:\\Users\\Chris\\Dropbox\\PROJECTS\\ADMIN\\gmailr-for-R-oauth.json")
+td_email<-"project.131076428.2855502@todoist.net"
+attach_path<-"C:\\Users\\Chris\\Dropbox\\PROJECTS\\CAR_MAINT_DB\\OUTPUT\\next_30_days.csv"
+```
+
+
+``` {r send_email, results = FALSE}
+
+write_csv(next_30_days, attach_path)
+
+email <- mime() %>%
+  to(td_email) %>%
+  from("christopher.umphlett@gmail.com") %>%
+  subject("Upcoming car maintenance") %>%
+  attach_file(attach_path)
+  
+send_message(email)
+```

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Chris Umphlett">
+    <meta name="description" content="Chris Umphlett&#39;s personal website">
+    <meta name="keywords" content="data science,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Creating a car maintenance log and reminders with R and SQL Server"/>
+<meta name="twitter:description" content="For years I used an Excel workbook with VBA to track our vehicles’ preventive maintenance and notify me when something was needed. This process hasn’t worked well the last couple years as the laptop with MS Office and the scheduled task is rarely left on when it is scheduled to run. I had also failed to account properly for some maintenace tasks that had never been done, but I intended to do, within a few years after purchasing the vehicles."/>
+
+
+    <base href="/posts/creating-a-car-maintenance-log-and-reminders-with-r-and-sql-server/">
+    <title>
+  Creating a car maintenance log and reminders with R and SQL Server · Chris Umphlett
+</title>
+
+    <link rel="canonical" href="/posts/creating-a-car-maintenance-log-and-reminders-with-r-and-sql-server/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="/css/coder.min.ac37073bc2826cd28ef57364a9fe339de7ebcb26dafc22fd832cb35cf5b1d048.css" integrity="sha256-rDcHO8KCbNKO9XNkqf4znefryyba/CL9gyyzXPWx0Eg=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="/">
+      Chris Umphlett
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/now/">Now</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Creating a car maintenance log and reminders with R and SQL Server</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-04-11T00:00:00Z'>
+                April 11, 2019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              5 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="/tags/r/">R</a>
+      <span class="separator">•</span>
+    <a href="/tags/sql-server/">SQL Server</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+
+
+<p>For years I used an Excel workbook with VBA to track our vehicles’ preventive maintenance and notify me when something was needed. This process hasn’t worked well the last couple years as the laptop with MS Office and the scheduled task is rarely left on when it is scheduled to run. I had also failed to account properly for some maintenace tasks that had never been done, but I intended to do, within a few years after purchasing the vehicles.</p>
+<p>Now I am working on a laptop without MS Office installed and wanting to get this process going again as I realized several things were overdue. I also needed to create a SQL Server DB on my home computer so that I could demonstrate some of the things I’ve been doing in my day job with R + SQL Server. Nail, meet hammer. In this article I will show how I set up a simple database and used R to create this process, and how you can do it too.</p>
+<div id="the-database" class="section level1">
+<h1>The database</h1>
+<p>My database has three tables used for vehicle maintenance. These are in a database called <code>UMP_HH</code> in the <code>assets</code> schema:</p>
+<ol style="list-style-type: decimal">
+<li><strong>car_maint_log</strong>: This contains the log of maintenance performed.</li>
+<li><strong>car_maint_ref</strong>: This table provides the expectations about the maintenance I want to do, and how often. I have both a date and mileage frequency, and want to perform each maintenance item whenever the earliest one is met (in other words, do an oil change every 12 months, or 12k miles, whichever comes first. I pay for Mobil 1 Synthetic extended life oil so I do not need to do this often!)</li>
+<li><strong>car_maint_vehicles</strong>: This is a list of my vehicles with the last actual odometer reading and estimated miles per day. Estimating current mileage is important for the prediction of upcoming maintenance dates.</li>
+</ol>
+<p>The first R chunk includes global chunk options and libraries required.</p>
+<pre class="r"><code>knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(RODBC)
+library(tidyverse)
+library(gmailr)
+library(kableExtra)
+library(knitr)</code></pre>
+<p>Then the tables are imported using the <code>RODBC</code> package. A <code>glimpse</code> of each table is shown to see the table structure I built and how I use it.</p>
+<pre class="r"><code>conn &lt;- odbcDriverConnect(&#39;driver={SQL Server};server=DESKTOP-SIIHDVF;database=UMP_HH;trusted_connection=true&#39;)
+log &lt;- sqlQuery(conn, &quot;select * from assets.car_maint_log&quot;) %&gt;%
+  mutate(maint_date = as.Date(maint_date))
+ref &lt;- sqlQuery(conn, &quot;select * from assets.car_maint_ref&quot;)
+vehicles &lt;- sqlQuery(conn, &quot;select * from assets.car_maint_vehicles&quot;)
+odbcClose(conn)
+
+glimpse(log)</code></pre>
+<pre><code>## Observations: 52
+## Variables: 6
+## $ vehicle       &lt;fct&gt; 2005 Toyota Sienna                              ...
+## $ who_performed &lt;fct&gt; Belle Tire                                      ...
+## $ maint_date    &lt;date&gt; 2019-02-22, 2019-02-22, 2016-09-08, 2018-06-20,...
+## $ mileage       &lt;int&gt; 190756, 136612, 166436, 184000, 174500, 165450, ...
+## $ service_name  &lt;fct&gt; Brake Fluid                                     ...
+## $ notes         &lt;fct&gt; NA, NA,  Pads (Front), NA, NA, NA, NA, NA, NA, N...</code></pre>
+<pre class="r"><code>glimpse(ref)</code></pre>
+<pre><code>## Observations: 10
+## Variables: 3
+## $ service_name     &lt;fct&gt; Oil Change                                   ...
+## $ frequency_miles  &lt;int&gt; 12000, 12000, 30000, 30000, 30000, 50000, 240...
+## $ frequency_months &lt;int&gt; 12, 12, 36, 36, 36, 72, 48, 12, 6, 36</code></pre>
+<pre class="r"><code>glimpse(vehicles)</code></pre>
+<pre><code>## Observations: 2
+## Variables: 4
+## $ vehicle               &lt;fct&gt; 2008 Honda Civic                        ...
+## $ miles_per_day         &lt;int&gt; 35, 10
+## $ odometer_reading      &lt;int&gt; 137893, 191324
+## $ odometer_reading_date &lt;fct&gt; 2019-04-06, 2019-04-06</code></pre>
+</div>
+<div id="calculate-estimated-mileage" class="section level1">
+<h1>Calculate estimated mileage</h1>
+<p>Before I can determine upcoming maintenance I need to estimate the current mileage on my vehicles. I do this by using my daily estimate multiplied by the number of days since I last entered a real odometer reading. I have a todoist task to update the real reading about every 3 months, as well as doing it after any long road trips.</p>
+<pre class="r"><code>vehicles2 &lt;- vehicles %&gt;%
+  mutate(est_mileage = as.numeric((Sys.Date() - as.Date(odometer_reading_date)) * miles_per_day + odometer_reading)) %&gt;%
+  select(vehicle, miles_per_day, est_mileage)
+
+kable(vehicles2,
+      caption = &quot;Vehicles&#39; estimated mileage&quot;,
+      format.args = list(big.mark = &quot;,&quot;)
+      ) %&gt;% 
+  kable_styling(full_width = F)</code></pre>
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+(#tab:est_mileage)Vehicles’ estimated mileage
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+vehicle
+</th>
+<th style="text-align:right;">
+miles_per_day
+</th>
+<th style="text-align:right;">
+est_mileage
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2008 Honda Civic
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:right;">
+138,068
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2005 Toyota Sienna
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+191,374
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="calculate-upcoming-maintenance" class="section level1">
+<h1>Calculate upcoming maintenance</h1>
+<p>By combining the log to get the last time maintenance was performed, with my requirements and estimated mileage, I can get the estimated days until maintenance is needed based on both the time and miles requirements. The final report tells me if any maintenance items are due in the next 30 days (or overdue) according to either method. As you can see, there are a couple things I never did after buying our van that are quite overdue.</p>
+<pre class="r"><code>last_maint_date &lt;- log %&gt;%
+  group_by(vehicle, service_name) %&gt;%
+  summarise(most_recent_date = max(maint_date), most_recent_odom = max(mileage)) %&gt;%
+  ungroup()
+
+upcoming_maint &lt;- ref %&gt;%
+  crossing(vehicles2) %&gt;%
+  left_join(last_maint_date) %&gt;%
+  mutate(days_left_time = round((frequency_months*30.25) - (Sys.Date() - most_recent_date),0),
+         days_left_miles = round(((frequency_miles) - (est_mileage - most_recent_odom)) / miles_per_day, 0),
+         miles_left = as.numeric(frequency_miles - (est_mileage - most_recent_odom))) %&gt;%
+  select(vehicle, service_name, most_recent_date, most_recent_odom, est_mileage, days_left_time, days_left_miles, miles_left)
+         
+next_30_days &lt;- upcoming_maint %&gt;%
+  filter(days_left_miles &lt;= 30 | days_left_time &lt;= 30) %&gt;%
+  select(vehicle, service_name, days_left_time, days_left_miles, miles_left)
+
+kable(next_30_days, 
+      caption = &quot;Maintenance due in next 30 days&quot;,
+      format.args = list(big.mark = &quot;,&quot;)) %&gt;% 
+  kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>
+(#tab:calc_upcoming)Maintenance due in next 30 days
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+vehicle
+</th>
+<th style="text-align:left;">
+service_name
+</th>
+<th style="text-align:left;">
+days_left_time
+</th>
+<th style="text-align:right;">
+days_left_miles
+</th>
+<th style="text-align:right;">
+miles_left
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2005 Toyota Sienna
+</td>
+<td style="text-align:left;">
+Spark Plugs
+</td>
+<td style="text-align:left;">
+-792 days
+</td>
+<td style="text-align:right;">
+-1,637
+</td>
+<td style="text-align:right;">
+-16,374
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2005 Toyota Sienna
+</td>
+<td style="text-align:left;">
+Fuel Filter
+</td>
+<td style="text-align:left;">
+-429 days
+</td>
+<td style="text-align:right;">
+-2,237
+</td>
+<td style="text-align:right;">
+-22,374
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2008 Honda Civic
+</td>
+<td style="text-align:left;">
+Tire Rotation
+</td>
+<td style="text-align:left;">
+-14 days
+</td>
+<td style="text-align:right;">
+-47
+</td>
+<td style="text-align:right;">
+-1,654
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="emailing-the-report-to-my-todoist" class="section level1">
+<h1>Emailing the report to my Todoist</h1>
+<p>If any items are in this final table I want a task to appear in Todoist. Tasks can be added to any project in Todoist using a unique email address provided by the app. I choose to have it sent to my Inbox project to be processed later. (The email and file paths are set in a hidden chunk). The attachment of the email gets added to the Todoist task as a comment.</p>
+<p>All of this code is also in a .R script that is linked to a weekly task in Windows Task Scheduler. The task will re-appear weekly in Todoist until I complete and log each of the needed items.</p>
+<pre class="r"><code>write_csv(next_30_days, attach_path)
+
+email &lt;- mime() %&gt;%
+  to(td_email) %&gt;%
+  from(&quot;christopher.umphlett@gmail.com&quot;) %&gt;%
+  subject(&quot;Upcoming car maintenance&quot;) %&gt;%
+  attach_file(attach_path)
+  
+send_message(email)</code></pre>
+</div>
+
+      </div>
+
+      <footer>
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>A part of good science is to see what everyone else can see but to think what no one else has ever said. ~ Amos Tversky</p>
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+       · 
+      [<a href="https://github.com/luizdepra/hugo-coder/tree/"></a>]
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-124691894-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>
