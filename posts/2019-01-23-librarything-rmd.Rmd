@@ -64,7 +64,7 @@ booksdf<-Reduce(function(x,y){rbind(x,y)},
                                    Finished_date=finished_date))
                },data$books))
 ```
-## Timeline of books (2018-08-22)
+## Timeline of books (2019-05-15)
 First I set out to create a timeline to show when I had completed books. I explored several paths and ended up [adapting a vignette from the `ggrepel` package](https://cran.r-project.org/web/packages/ggrepel/vignettes/ggrepel.html) with which I was previously unfamiliar. I noticed a larger gap in my book completions than I remembered, until I remembered that we had a baby on 3/12/2018. So I added an annotation to fill all of that white space with a ~~excuse~~ reason.  
 
 <div><img src="/images/Elsie.JPG" align="center"></div>
