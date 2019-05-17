@@ -139,7 +139,7 @@ vehicles &lt;- sqlQuery(conn, &quot;select * from assets.car_maint_vehicles&quot
 odbcClose(conn)
 
 glimpse(log)</code></pre>
-<pre><code>## Observations: 52
+<pre><code>## Observations: 58
 ## Variables: 6
 ## $ vehicle       &lt;fct&gt; 2005 Toyota Sienna                              ...
 ## $ who_performed &lt;fct&gt; Belle Tire                                      ...
@@ -148,18 +148,18 @@ glimpse(log)</code></pre>
 ## $ service_name  &lt;fct&gt; Brake Fluid                                     ...
 ## $ notes         &lt;fct&gt; NA, NA,  Pads (Front), NA, NA, NA, NA, NA, NA, N...</code></pre>
 <pre class="r"><code>glimpse(ref)</code></pre>
-<pre><code>## Observations: 10
+<pre><code>## Observations: 9
 ## Variables: 3
 ## $ service_name     &lt;fct&gt; Oil Change                                   ...
-## $ frequency_miles  &lt;int&gt; 12000, 12000, 30000, 30000, 30000, 50000, 240...
-## $ frequency_months &lt;int&gt; 12, 12, 36, 36, 36, 72, 48, 12, 6, 36</code></pre>
+## $ frequency_miles  &lt;int&gt; 12000, 12000, 30000, 30000, 30000, 50000, 120...
+## $ frequency_months &lt;int&gt; 12, 12, 36, 36, 36, 72, 12, 6, 36</code></pre>
 <pre class="r"><code>glimpse(vehicles)</code></pre>
 <pre><code>## Observations: 2
 ## Variables: 4
 ## $ vehicle               &lt;fct&gt; 2008 Honda Civic                        ...
 ## $ miles_per_day         &lt;int&gt; 35, 10
-## $ odometer_reading      &lt;int&gt; 137893, 191324
-## $ odometer_reading_date &lt;fct&gt; 2019-04-06, 2019-04-06</code></pre>
+## $ odometer_reading      &lt;int&gt; 138092, 191324
+## $ odometer_reading_date &lt;fct&gt; 2019-04-13, 2019-04-06</code></pre>
 </div>
 <div id="calculate-estimated-mileage" class="section level1">
 <h1>Calculate estimated mileage</h1>
@@ -199,7 +199,7 @@ est_mileage
 35
 </td>
 <td style="text-align:right;">
-138,068
+139,247
 </td>
 </tr>
 <tr>
@@ -210,7 +210,7 @@ est_mileage
 10
 </td>
 <td style="text-align:right;">
-191,374
+191,724
 </td>
 </tr>
 </tbody>
@@ -265,55 +265,6 @@ miles_left
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-2005 Toyota Sienna
-</td>
-<td style="text-align:left;">
-Spark Plugs
-</td>
-<td style="text-align:left;">
--792 days
-</td>
-<td style="text-align:right;">
--1,637
-</td>
-<td style="text-align:right;">
--16,374
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2005 Toyota Sienna
-</td>
-<td style="text-align:left;">
-Fuel Filter
-</td>
-<td style="text-align:left;">
--429 days
-</td>
-<td style="text-align:right;">
--2,237
-</td>
-<td style="text-align:right;">
--22,374
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2008 Honda Civic
-</td>
-<td style="text-align:left;">
-Tire Rotation
-</td>
-<td style="text-align:left;">
--14 days
-</td>
-<td style="text-align:right;">
--47
-</td>
-<td style="text-align:right;">
--1,654
-</td>
 </tr>
 </tbody>
 </table>
