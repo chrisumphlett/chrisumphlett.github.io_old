@@ -13,9 +13,8 @@ For many years I used a web site called Shelfari to track my reading and wish li
 I do have enough data however to start trying out some techniques I do not use in my day-job, like working with API's, non-tibble data structures and more unique visualizations. As I began working with the [LibraryThing JSON data](https://wiki.librarything.com/index.php/LibraryThing_JSON_Books_API) I had a difficult time converting it from a list-in-a-list-in-a-list to a data frame. Thankfully I have a friend named Stack Overflow. I will be re-using this code for all of the work I do on this project.
 
 
-```{r get_api, echo=FALSE}
+```{r, echo=FALSE}
 library(jsonlite)
-
 data<-fromJSON("http://www.librarything.com/api_getdata.php?userid=cau83&key=392812157&max=1000&showCollections=1&responseType=json&showDates=1")
 #Thanks to user @TUSHAr
 #https://stackoverflow.com/questions/51913523/extracting-list-in-a-list-in-a-list-to-build-dataframe-in-r
@@ -54,13 +53,13 @@ booksdf<-Reduce(function(x,y){rbind(x,y)},
                    finished_stamp = NA
                    finished_date = NA
                  }
-                 isbn = x$ISBN
+                 book_id = x$book_id
                  title = x$title
                  author = x$author_fl
                  rating = x$rating
                  collections = paste(unlist(x$collections),collapse = ",")
                  
-                 return(data.frame(isbn=isbn,Title=title,Author=author,Rating=rating,
+                 return(data.frame(ID=book_id,Title=title,Author=author,Rating=rating,
                                    Collections=collections,Started_date=started_date,
                                    Finished_date=finished_date))
                },data$books))
@@ -70,12 +69,12 @@ First I set out to create a timeline to show when I had completed books. I explo
 
 <div><img src="/images/Elsie.JPG" align="center"></div>
 
-``` {r timeline, echo=FALSE, message=FALSE, warning=FALSE}
+``` {r, echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(ggrepel)
 library(scales)
 #Filter down to books finished since Dec 2017 when I started using date feature in LibThing
-hasdate<-booksdf %>% mutate(date=as.Date(Finished_date, "%b %d, %Y")) %>% filter(!is.na(Finished_date) & date>="2017-12-01") 
+hasdate<-booksdf %>% mutate(date=as.Date(Finished_date,"%b %d, %Y")) %>% filter(!is.na(Finished_date) & date>="2017-12-01", Author != "Donald B. DeYoung") 
 #Extract just the main title (everything before colon), and add a line break with author name for display 
 hasdate$shorttitle<-str_replace_all(hasdate$Title,str_sub(hasdate$Title,str_locate(hasdate$Title,":")[,1],),"...")
 #if there is no colon, use original title
@@ -93,3 +92,8 @@ ggplot(hasdate,aes(x=1,y=date)) +
   ggtitle("Timeline of book finish dates") +
   geom_text(aes(y=birthday,label="Baby born = less reading", x=1.02), angle=45, hjust=0)
 ```
+
+The timeline updates each time new content is pushed to the site.
+
+## Future Plans
+I plan to add visualizations of where I have acquired books and the time it takes me to complete books. As time goes on and I get more data points I may add more. 
