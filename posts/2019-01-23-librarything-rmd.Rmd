@@ -69,7 +69,7 @@ First I set out to create a timeline to show when I had completed books. I explo
 
 <div><img src="/images/Elsie.JPG" align="center"></div>
 
-``` {r, echo=FALSE, message=FALSE, warning=FALSE}
+``` {r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=12}
 library(tidyverse)
 library(ggrepel)
 library(scales)
