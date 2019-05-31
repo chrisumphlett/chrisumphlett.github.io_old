@@ -108,4 +108,4 @@ ggplot(spurious_discoveries, aes(x = year)) +
 
 ```
 
-What do you think about the What-if Trend Chart? An earlier version had no black line, only the arrows and points. This looked nice when the plot had only a few values on the x axis but seemed harder to read as the x axis became longer. Let me know your feedback, or make your own and share it with me on twitter (@chrisumphlett)[https://www.twitter.com/chrisumphlett].
+What do you think about the What-if Trend Chart? An earlier version had no black line, only the arrows and points. This looked nice when the plot had only a few values on the x axis but seemed harder to read as the x axis became longer. Let me know your feedback, or make your own and share it with me on twitter @chrisumphlett.
