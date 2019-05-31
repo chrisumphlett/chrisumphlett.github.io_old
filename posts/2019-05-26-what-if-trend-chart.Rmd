@@ -90,8 +90,6 @@ Arrows are not shown if there was no change in the (integer-rounded) number of d
 
 colors <- c("Yes" = "green", "Yes - no change" = "grey", "No" = "red", " " = "white")
 
-dev.new()
-png("C:\\Users\\Chris\\Dropbox\\PROJECTS\\whatif-chart.png", width = 800, height = 600)
 ggplot(spurious_discoveries, aes(x = year)) +
   geom_line(aes(y = discoveries), color = "black", size = 0.8) +
   geom_line(aes(y = 5), color = "grey", size = 0.8) +
@@ -105,7 +103,6 @@ ggplot(spurious_discoveries, aes(x = year)) +
        y = "\"Important\" discoveries") +
   theme_classic() +
   theme(axis.ticks = element_blank())
-dev.off()
 
  
 
