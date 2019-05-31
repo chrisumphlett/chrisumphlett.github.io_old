@@ -6,10 +6,20 @@
     <description>Recent content in Posts on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 25 May 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 26 May 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>What If Trend Chart</title>
+      <link>/posts/what-if-trend-chart/</link>
+      <pubDate>Sun, 26 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/what-if-trend-chart/</guid>
+      <description>library(tidyverse)library(timetk)The purpose of this post is to demonstrate a new visual that I developed in my day job at Consumers Energy. I cannot share that data or visual and decided to use some of R’s built in data sets to show the visual. The scenario is spurious, but that is besides the point.
+I thought it would be fun to look for some kind of spurious relationship between a causal factor and annual “Important Discoveries” from the discoveries data set (according to the The World Almanac and Book of Facts in 1975).</description>
+    </item>
     
     <item>
       <title>Getting Unstuck: Special Obstacles</title>

@@ -1,0 +1,112 @@
+---
+title: "What If Trend Chart"
+author: "Chris Umphlett"
+date: '2019-05-26'
+description: ''
+externalLink: ''
+slug: what-if-trend-chart
+tags: 
+  - dataviz
+categories: []
+---
+
+``` {r setup, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(timetk)
+
+```
+
+The purpose of this post is to demonstrate a new visual that I developed in my day job at Consumers Energy. I cannot share that data or visual and decided to use some of R's built in data sets to show the visual. The scenario is spurious, but that is besides the point. 
+
+I thought it would be fun to look for some kind of spurious relationship between a causal factor and annual "Important Discoveries" from the `discoveries` data set (according to the The World Almanac and Book of Facts in 1975). The average annual temperature in New Haven lined up well with the dates from the discoveries data. Below, I will look up the description of those data sets and pull them into data frames. Both are time series and I use the `tk_tbl` function from the `time_tk` package to convert to a tibble.
+
+The final joined data frame, and a plot for each, is shown.
+
+``` {r datasets, message = FALSE, fig.width = 6, fig.height = 3}
+# opens help file for each data set
+#?nhtemp
+#?discoveries
+
+# read in the datasets
+data("nhtemp")
+data("discoveries")
+
+# plot each time series
+plot(nhtemp)
+plot(discoveries)
+
+# convert into single data frame
+temp <- tk_tbl(nhtemp) %>%
+  rename(year = index, annual_temp = value)
+
+discoveries <- tk_tbl(discoveries) %>%
+  rename(year = index, discoveries = value) %>%
+  inner_join(temp)
+
+# preview the data
+head(discoveries)
+```
+
+Next, I will calculate the correlation and do a basic regression to see whether or not there is a spurious relationship. While discoveries and New Haven temperature are slightly negatively correlated, the direction of the association flips, and temperature is significant at an alpha of 0.1 when including a year trend term in the linear model that controls for the decreasing trend in important discoveries. 
+
+*[I'll spare you the rants about p-hacking, reproducibility and irresponsible data stewardship here, many others have covered the topic.]*
+
+``` {r analysis, message = FALSE}
+cor(discoveries$discoveries, discoveries$annual_temp)
+
+reg <- lm(discoveries ~ annual_temp + year, data = discoveries)
+
+summary(reg)
+```
+
+The allure of spurious correlation is demonstrated here. It is simple to create a linear model in R, and for someone with an agenda (Whether that's to confirm something they want to believe, or just for the sake of having an interesting finding) it can give false assurance that you have discovered something true because "it's a regression with p-value of __". 
+
+Back to the spurious scenario: With such a surprising finding that the temperature in New England town of less than 150k residents has a profound effect on scientific progress, one naturally begins to wonder. What if global warming leads to more important discoveries such that humanity has a net benefit? Would it be possible to somehow artificially control the temperature of New Haven and experience the benefits of slightly warmer temperatures there without all the inconvenient truths of rising sea levels and mass extinction? 
+
+A good visualization will help show the impact of an alternative scenario, such as the construction of a New Haven sized greenhouse that would have kept the temperature there at an annual average of 54 degrees. Let's construct that scenario.
+
+I start by using the coefficients to build the formula that will estimate the number of discoveries by using the temperature coefficient and multiplying it by the change in temperature. Then I create the `meets_goal` factor which indicates whether or not the temperature change leads the estimate to meet the goal when it previously did not; meet the goal when it already did; or fail to meet the goal.
+
+``` {r scenario, message = FALSE}
+temp_coeff <- reg$coefficients[[2]]
+
+spurious_discoveries <- discoveries %>%
+  mutate(every_year_54 = floor(reg$coefficients[[2]] * (54 - annual_temp) + discoveries),
+         change = if_else(every_year_54 != discoveries, every_year_54, NA_real_),
+         meets_goal = as.factor(case_when(
+           change >= 5 & discoveries < 5 ~ "Yes", 
+           change >= 5 ~ "Yes - no change", 
+           change < 5 ~ "No",
+           is.na(change) ~ " ")))
+```
+
+Finally, the ggplot What-if Trend Chart. I use green to highlight when the alternate scenario results in going from missing to meeting the goal; grey when there's no change because the goal is already met; and red when the goal is still not met.
+
+The trickiest part was learning how to use `geom_segment`, particularly the arrow parameter. 
+
+Arrows are not shown if there was no change in the (integer-rounded) number of discoveries. This was set in the `mutate` statement above, where the FALSE argument for the `change` column was set to `NA_real`.
+
+``` {r plot, message = FALSE, warning = FALSE}
+
+colors <- c("Yes" = "green", "Yes - no change" = "grey", "No" = "red", " " = "white")
+
+
+ggplot(spurious_discoveries, aes(x = year)) +
+  geom_line(aes(y = discoveries), color = "black", size = 0.8) +
+  geom_line(aes(y = 5), color = "grey", size = 0.8) +
+  geom_point(aes(y = change, color = meets_goal), size = 5, alpha = 0.5) +
+  scale_color_manual(values = colors) +
+  geom_segment(aes(xend = year, y =  discoveries, yend = change),
+               arrow = arrow(length = unit(.3, "cm")), color = "#727573") +
+  labs(title = "What-if Trend Chart example",
+       subtitle = "If the annual mean temperature in New Haven was 54 every year, how much more often\n would the scientific community have met an arbitrary goal of 5 per year?",
+       x = "Year",
+       y = "\"Important\" discoveries") +
+  theme_classic() +
+  theme(axis.ticks = element_blank())
+
+ 
+
+```
+
+What do you think about the What-if Trend Chart? An earlier version had no black line, only the arrows and points. This looked nice when the plot had only a few values on the x axis but seemed harder to read as the x axis became longer. Let me know your feedback, or make your own and share it with me on twitter [@chrisumphlett](https://www.twitter.com/chrisumphlett).
