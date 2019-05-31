@@ -95,7 +95,7 @@ I thought it would be fun to look for some kind of spurious relationship between
             </span>
             <span class="reading-time">
               <i class="fas fa-clock"></i>
-              5 minutes read
+              6 minutes read
             </span>
           </div>
           
@@ -192,7 +192,8 @@ spurious_discoveries &lt;- discoveries %&gt;%
 <p>Arrows are not shown if there was no change in the (integer-rounded) number of discoveries. This was set in the <code>mutate</code> statement above, where the FALSE argument for the <code>change</code> column was set to <code>NA_real</code>.</p>
 <pre class="r"><code>colors &lt;- c(&quot;Yes&quot; = &quot;green&quot;, &quot;Yes - no change&quot; = &quot;grey&quot;, &quot;No&quot; = &quot;red&quot;, &quot; &quot; = &quot;white&quot;)
 
-
+dev.new()
+png(&quot;C:\\Users\\Chris\\Dropbox\\PROJECTS\\whatif-chart.png&quot;, width = 800, height = 600)
 ggplot(spurious_discoveries, aes(x = year)) +
   geom_line(aes(y = discoveries), color = &quot;black&quot;, size = 0.8) +
   geom_line(aes(y = 5), color = &quot;grey&quot;, size = 0.8) +
@@ -201,12 +202,14 @@ ggplot(spurious_discoveries, aes(x = year)) +
   geom_segment(aes(xend = year, y =  discoveries, yend = change),
                arrow = arrow(length = unit(.3, &quot;cm&quot;)), color = &quot;#727573&quot;) +
   labs(title = &quot;What-if Trend Chart example&quot;,
-       subtitle = &quot;If the annual mean temperature in New Haven was 54 every year, how much more often\n would the scientific community have met an arbitrary goal of 5 per year?&quot;,
+       subtitle = &quot;If the annual mean temperature in New Haven was 54 every year, how much more often\n would the scientific community have met an arbitrary goal of 5 \&quot;Important Discoveries\&quot; per year?&quot;,
        x = &quot;Year&quot;,
        y = &quot;\&quot;Important\&quot; discoveries&quot;) +
   theme_classic() +
-  theme(axis.ticks = element_blank())</code></pre>
-<p><img src="/posts/2019-05-26-what-if-trend-chart_files/figure-html/plot-1.png" width="672" /></p>
+  theme(axis.ticks = element_blank())
+dev.off()</code></pre>
+<pre><code>## png 
+##   2</code></pre>
 <p>What do you think about the What-if Trend Chart? An earlier version had no black line, only the arrows and points. This looked nice when the plot had only a few values on the x axis but seemed harder to read as the x axis became longer. Let me know your feedback, or make your own and share it with me on twitter (<span class="citation">@chrisumphlett</span>)[<a href="https://www.twitter.com/chrisumphlett" class="uri">https://www.twitter.com/chrisumphlett</a>].</p>
 
       </div>
