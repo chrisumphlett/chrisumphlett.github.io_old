@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Chris Umphlett">
+    <meta name="description" content="Chris Umphlett&#39;s personal website">
+    <meta name="keywords" content="data science,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Collecting data from the Accuweather API"/>
+<meta name="twitter:description" content="I began collecting hourly and daily forecast and actual weather data from the Accuweather API in May 2019. The endgame will be to do analysis to discover the points at which the forecast accuracy degrades (eg, an hourly forecast gets significantly worse at 4 hours away; a daily forecast gets worse at 3 days away).
+I have learned quite a bit about weather forecasting without studying it directly– it is discussed in depth in both Nate Silver’s book The Signal and the Noise and Michael Lewis’ (Audible only) book The Coming Storm."/>
+
+
+    <base href="/posts/collecting-data-from-the-accuweather-api/">
+    <title>
+  Collecting data from the Accuweather API · Chris Umphlett
+</title>
+
+    <link rel="canonical" href="/posts/collecting-data-from-the-accuweather-api/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="/css/coder.min.ac37073bc2826cd28ef57364a9fe339de7ebcb26dafc22fd832cb35cf5b1d048.css" integrity="sha256-rDcHO8KCbNKO9XNkqf4znefryyba/CL9gyyzXPWx0Eg=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="/">
+      Chris Umphlett
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/now/">Now</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Collecting data from the Accuweather API</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-06-04T00:00:00Z'>
+                June 4, 2019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              5 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="/tags/sql-server/">SQL Server</a>
+      <span class="separator">•</span>
+    <a href="/tags/r/">R</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+
+<p>I began collecting hourly and daily forecast and actual weather data from the Accuweather API in May 2019. The endgame will be to do analysis to discover the points at which the forecast accuracy degrades (eg, an hourly forecast gets significantly worse at 4 hours away; a daily forecast gets worse at 3 days away).</p>
+<p>I have learned quite a bit about weather forecasting without studying it directly– it is discussed in depth in both Nate Silver’s book <em>The Signal and the Noise</em> and Michael Lewis’ (Audible only) book <em>The Coming Storm</em>. Supposedly a 7 day forecast is no more accurate than just using a historical average. I would like to test that but then go further to see how the forecastability changes from 1 to 7 days; to look at it from an hourly perspective; and to differentiate between precipitation forecasts and temperature forecasts.</p>
+<div id="work-i-did-before-this-r-script" class="section level2">
+<h2>Work I did before this R script</h2>
+<p>I have done some prep work before writing this code. First, I had to sign up to get a token for the <a href="https://developer.accuweather.com/apis">Accuweather API</a> and read the documentation and figure out how to get the data I wanted. Second, I created the tables that I would be populating in my SQL Server database.</p>
+</div>
+<div id="setup" class="section level2">
+<h2>Setup</h2>
+<p>The setup code chunk pulls in the necessary libraries, my API key that I have set in the .Renviron file, and some constants that I will use with the API calls.</p>
+<pre class="r"><code>library(RODBC)
+library(jsonlite)
+library(tidyverse)
+library(anytime)
+library(lubridate)
+
+key &lt;- Sys.getenv(&quot;accuweather_key&quot;)
+api_root &lt;- &quot;http://dataservice.accuweather.com/&quot;
+location_id &lt;- 329381 # change this value to get forecasts for a different area. must use a different api call to look up or go to the api documentation online</code></pre>
+</div>
+<div id="collecting-the-api-data" class="section level2">
+<h2>Collecting the API Data</h2>
+<p>I utilized three different API calls to get the data, one each for: 1. Hourly forecasts 2. Daily forecasts 3. Hourly actual (from which I will derive the daily aggregates of temperature and precipitation)</p>
+<p>The free version of the API limits the horizons available for the forecasts.</p>
+<p>I scheduled this R script to run every hour. My laptop is not always on but over time I will end up with many data points showing the forecasts at every hour from 12 hours to 1 hour in advance of the actual weather experience.</p>
+<div id="hourly-forecasts" class="section level3">
+<h3>Hourly forecasts</h3>
+<p>Not knowing exactly what I may want to do with the data later I collected whatever I could get with the free version of the API. For hourly forecasts I wrote a function and used it to gather data for both the 1 and 12 hour forecast horizons. It should also work for the 24 hour horizon if one had access to it.</p>
+<p>The data returned is in a nested data frame. I rename some columns and create some empty ones because I wanted to have the same column structure in the hourly and daily forecast data so they can be in a single table in the database.</p>
+<pre class="r"><code>get_hourly_fc &lt;- function(hours) {
+  x &lt;- fromJSON(paste0(api_root, &quot;forecasts/v1/hourly/&quot;, hours, &quot;hour/&quot;, location_id, &quot;.json?&amp;apikey=&quot;, key))
+  x$access_dt &lt;- anytime(Sys.time())
+  x %&gt;% 
+    mutate(forecast_dt = anytime(DateTime),
+           precipitation_prob = PrecipitationProbability,
+           weather_text = NA,
+           min_temp = NA,
+           max_temp = NA,
+           fc_horizon = paste0(hours, &quot; HOURS&quot;)) %&gt;%
+    select(forecast_dt, precipitation_prob, weather_text, access_dt, Temperature, min_temp, max_temp, fc_horizon)
+  }
+
+fc_12h &lt;- get_hourly_fc(12)
+fc_1h &lt;- get_hourly_fc(1)
+fc_12h$temperature &lt;- fc_12h$Temperature$Value #extract temp from nested column
+fc_1h$temperature &lt;- fc_1h$Temperature$Value
+fc_12h &lt;- fc_12h %&gt;% select(-Temperature)
+fc_1h &lt;- fc_1h %&gt;% select(-Temperature)</code></pre>
+</div>
+<div id="daily-forecasts" class="section level3">
+<h3>Daily Forecasts</h3>
+<p>The daily forecast API function looks pretty similar.</p>
+<pre class="r"><code>get_daily_fc &lt;- function(days) {
+  fromJSON(paste0(api_root, &quot;forecasts/v1/daily/&quot;, days, &quot;day/&quot;, location_id, &quot;.json?&amp;apikey=&quot;, key))
+  x &lt;- fromJSON(paste0(api_root, &quot;forecasts/v1/daily/&quot;, days, &quot;day/&quot;, location_id, &quot;.json?&amp;apikey=&quot;, key))
+  x2 &lt;- as_tibble(x[[2]])
+  weather_text &lt;- x[[1]]$Text
+  x2$weather_text &lt;- weather_text
+  x2$access_dt &lt;- anytime(Sys.time())
+  x2 %&gt;% 
+    mutate(forecast_dt = anytime(Date),
+           precipitation_prob = NA,
+           temperature = NA,
+           fc_horizon = paste0(days, &quot; DAYS&quot;)) %&gt;%
+    select(forecast_dt, precipitation_prob, temperature, weather_text, access_dt, fc_horizon, Temperature)
+}
+
+
+fc_1d &lt;- get_daily_fc(1)
+fc_5d &lt;- get_daily_fc(5) 
+fc_1d$max_temp &lt;- fc_1d$Temperature$Maximum$Value
+fc_1d$min_temp &lt;- fc_1d$Temperature$Minimum$Value
+fc_5d$max_temp &lt;- fc_5d$Temperature$Maximum$Value
+fc_5d$min_temp &lt;- fc_5d$Temperature$Minimum$Value
+fc_1d &lt;- fc_1d %&gt;% select(-Temperature)
+fc_5d &lt;- fc_5d %&gt;% select(-Temperature)</code></pre>
+</div>
+<div id="combine-the-forecasts" class="section level3">
+<h3>Combine the forecasts</h3>
+<p>I combine the four different forecast horizons into a single table.</p>
+<pre class="r"><code>forecasts &lt;- bind_rows(fc_12h, fc_1h, fc_1d, fc_5d)
+
+knitr::kable(head(forecasts, 5))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">forecast_dt</th>
+<th align="right">precipitation_prob</th>
+<th align="left">weather_text</th>
+<th align="left">access_dt</th>
+<th align="right">min_temp</th>
+<th align="right">max_temp</th>
+<th align="left">fc_horizon</th>
+<th align="right">temperature</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2019-06-09 15:00:00</td>
+<td align="right">73</td>
+<td align="left">NA</td>
+<td align="left">2019-06-09 14:56:59</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">12 HOURS</td>
+<td align="right">69</td>
+</tr>
+<tr class="even">
+<td align="left">2019-06-09 16:00:00</td>
+<td align="right">74</td>
+<td align="left">NA</td>
+<td align="left">2019-06-09 14:56:59</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">12 HOURS</td>
+<td align="right">68</td>
+</tr>
+<tr class="odd">
+<td align="left">2019-06-09 17:00:00</td>
+<td align="right">74</td>
+<td align="left">NA</td>
+<td align="left">2019-06-09 14:56:59</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">12 HOURS</td>
+<td align="right">69</td>
+</tr>
+<tr class="even">
+<td align="left">2019-06-09 18:00:00</td>
+<td align="right">74</td>
+<td align="left">NA</td>
+<td align="left">2019-06-09 14:56:59</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">12 HOURS</td>
+<td align="right">69</td>
+</tr>
+<tr class="odd">
+<td align="left">2019-06-09 19:00:00</td>
+<td align="right">74</td>
+<td align="left">NA</td>
+<td align="left">2019-06-09 14:56:59</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">12 HOURS</td>
+<td align="right">68</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="actual-weather" class="section level3">
+<h3>Actual weather</h3>
+<p>I only utilized a single API call for the actual weather history, so no need for a function.</p>
+<pre class="r"><code>hist_24h &lt;- fromJSON(paste0(api_root, &quot;currentconditions/v1/&quot;, location_id, &quot;/historical/24.json?&amp;apikey=&quot;, key)) %&gt;%
+  mutate(weather_dt = anytime(LocalObservationDateTime),
+         precipitation_f = ifelse(HasPrecipitation, 1, 0)) %&gt;%
+  rename(weather_text = WeatherText, precipitation_type = PrecipitationType) %&gt;%
+  select(weather_dt, weather_text, precipitation_f, precipitation_type, Temperature)
+hist_24h$temperature &lt;- hist_24h$Temperature$Imperial$Value
+history &lt;- hist_24h %&gt;% select(-Temperature)
+
+knitr::kable(head(history, 5))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">weather_dt</th>
+<th align="left">weather_text</th>
+<th align="right">precipitation_f</th>
+<th align="left">precipitation_type</th>
+<th align="right">temperature</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2019-06-09 14:03:00</td>
+<td align="left">Rain</td>
+<td align="right">1</td>
+<td align="left">Rain</td>
+<td align="right">68</td>
+</tr>
+<tr class="even">
+<td align="left">2019-06-09 13:04:00</td>
+<td align="left">Light rain</td>
+<td align="right">1</td>
+<td align="left">Rain</td>
+<td align="right">68</td>
+</tr>
+<tr class="odd">
+<td align="left">2019-06-09 12:03:00</td>
+<td align="left">Light rain</td>
+<td align="right">1</td>
+<td align="left">Rain</td>
+<td align="right">68</td>
+</tr>
+<tr class="even">
+<td align="left">2019-06-09 11:03:00</td>
+<td align="left">Light rain</td>
+<td align="right">1</td>
+<td align="left">Rain</td>
+<td align="right">69</td>
+</tr>
+<tr class="odd">
+<td align="left">2019-06-09 10:03:00</td>
+<td align="left">Cloudy</td>
+<td align="right">0</td>
+<td align="left">NA</td>
+<td align="right">70</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="upload-to-database" class="section level3">
+<h3>Upload to Database</h3>
+<p>Finally, I append both the forecast and actual data frames to the database tables.</p>
+<pre class="r"><code>conn &lt;- odbcDriverConnect(&#39;driver={SQL Server};server=DESKTOP-SIIHDVF;database=UMP_HH;trusted_connection=true&#39;)
+sqlSave(conn, forecasts, &quot;external_api.accuweather_forecast&quot;, append = TRUE, rownames = FALSE)
+sqlSave(conn, history, &quot;external_api.accuweather_history&quot;, append = TRUE, rownames = FALSE)</code></pre>
+</div>
+<div id="visualizing-the-data" class="section level3">
+<h3>Visualizing the data</h3>
+<p>To give an idea of what the data looks like so far I pulled the full set of data back into R. Below are plots showing the actual day time weather and the one-hour-ahead forecasts collected. You can see that there are both long periods of time with continuous observations and gaps.</p>
+<p><img src="/posts/2019-06-04-collecting-data-from-the-accuweather-api_files/figure-html/plot_weather-1.png" width="672" /><img src="/posts/2019-06-04-collecting-data-from-the-accuweather-api_files/figure-html/plot_weather-2.png" width="672" /></p>
+</div>
+</div>
+
+      </div>
+
+      <footer>
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>A part of good science is to see what everyone else can see but to think what no one else has ever said. ~ Amos Tversky</p>
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+       · 
+      [<a href="https://github.com/luizdepra/hugo-coder/tree/"></a>]
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-124691894-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>

@@ -6,10 +6,20 @@
     <description>Recent content in Sql Server on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 11 Apr 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 04 Jun 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/sql-server/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Collecting data from the Accuweather API</title>
+      <link>/posts/collecting-data-from-the-accuweather-api/</link>
+      <pubDate>Tue, 04 Jun 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/collecting-data-from-the-accuweather-api/</guid>
+      <description>I began collecting hourly and daily forecast and actual weather data from the Accuweather API in May 2019. The endgame will be to do analysis to discover the points at which the forecast accuracy degrades (eg, an hourly forecast gets significantly worse at 4 hours away; a daily forecast gets worse at 3 days away).
+I have learned quite a bit about weather forecasting without studying it directly– it is discussed in depth in both Nate Silver’s book The Signal and the Noise and Michael Lewis’ (Audible only) book The Coming Storm.</description>
+    </item>
     
     <item>
       <title>Creating a car maintenance log and reminders with R and SQL Server</title>

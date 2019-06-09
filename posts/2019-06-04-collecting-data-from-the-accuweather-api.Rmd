@@ -1,0 +1,186 @@
+---
+title: Collecting data from the Accuweather API
+author: Chris Umphlett
+date: '2019-06-04'
+slug: collecting-data-from-the-accuweather-api
+categories: []
+tags:
+  - SQL Server
+  - R
+description: ''
+externalLink: ''
+---
+
+I began collecting hourly and daily forecast and actual weather data from the Accuweather API in May 2019. The endgame will be to do analysis to discover the points at which the forecast accuracy degrades (eg, an hourly forecast gets significantly worse at 4 hours away; a daily forecast gets worse at 3 days away). 
+
+I have learned quite a bit about weather forecasting without studying it directly-- it is discussed in depth in both Nate Silver's book *The Signal and the Noise* and Michael Lewis' (Audible only) book *The Coming Storm*. Supposedly a 7 day forecast is no more accurate than just using a historical average. I would like to test that but then go further to see how the forecastability changes from 1 to 7 days; to look at it from an hourly perspective; and to differentiate between precipitation forecasts and temperature forecasts. 
+
+## Work I did before this R script
+
+I have done some prep work before writing this code. First, I had to sign up to get a token for the [Accuweather API](https://developer.accuweather.com/apis) and read the documentation and figure out how to get the data I wanted. Second, I created the tables that I would be populating in my SQL Server database. 
+
+## Setup 
+
+The setup code chunk pulls in the necessary libraries, my API key that I have set in the .Renviron file, and some constants that I will use with the API calls.
+
+``` {r setup, message = FALSE, warning = FALSE}
+
+library(RODBC)
+library(jsonlite)
+library(tidyverse)
+library(anytime)
+library(lubridate)
+
+key <- Sys.getenv("accuweather_key")
+api_root <- "http://dataservice.accuweather.com/"
+location_id <- 329381 # change this value to get forecasts for a different area. must use a different api call to look up or go to the api documentation online
+```
+
+## Collecting the API Data
+
+I utilized three different API calls to get the data, one each for:
+1. Hourly forecasts
+2. Daily forecasts
+3. Hourly actual (from which I will derive the daily aggregates of temperature and precipitation)
+
+The free version of the API limits the horizons available for the forecasts.
+
+I scheduled this R script to run every hour. My laptop is not always on but over time I will end up with many data points showing the forecasts at every hour from 12 hours to 1 hour in advance of the actual weather experience.
+
+### Hourly forecasts
+
+Not knowing exactly what I may want to do with the data later I collected whatever I could get with the free version of the API. For hourly forecasts I wrote a function and used it to gather data for both the 1 and 12 hour forecast horizons. It should also work for the 24 hour horizon if one had access to it.
+
+The data returned is in a nested data frame. I rename some columns and create some empty ones because I wanted to have the same column structure in the hourly and daily forecast data so they can be in a single table in the database.
+
+``` {r hourly_fc}
+
+get_hourly_fc <- function(hours) {
+  x <- fromJSON(paste0(api_root, "forecasts/v1/hourly/", hours, "hour/", location_id, ".json?&apikey=", key))
+  x$access_dt <- anytime(Sys.time())
+  x %>% 
+    mutate(forecast_dt = anytime(DateTime),
+           precipitation_prob = PrecipitationProbability,
+           weather_text = NA,
+           min_temp = NA,
+           max_temp = NA,
+           fc_horizon = paste0(hours, " HOURS")) %>%
+    select(forecast_dt, precipitation_prob, weather_text, access_dt, Temperature, min_temp, max_temp, fc_horizon)
+  }
+
+fc_12h <- get_hourly_fc(12)
+fc_1h <- get_hourly_fc(1)
+fc_12h$temperature <- fc_12h$Temperature$Value #extract temp from nested column
+fc_1h$temperature <- fc_1h$Temperature$Value
+fc_12h <- fc_12h %>% select(-Temperature)
+fc_1h <- fc_1h %>% select(-Temperature)
+
+```
+
+### Daily Forecasts
+
+The daily forecast API function looks pretty similar.
+
+``` {r daily_fc}
+get_daily_fc <- function(days) {
+  fromJSON(paste0(api_root, "forecasts/v1/daily/", days, "day/", location_id, ".json?&apikey=", key))
+  x <- fromJSON(paste0(api_root, "forecasts/v1/daily/", days, "day/", location_id, ".json?&apikey=", key))
+  x2 <- as_tibble(x[[2]])
+  weather_text <- x[[1]]$Text
+  x2$weather_text <- weather_text
+  x2$access_dt <- anytime(Sys.time())
+  x2 %>% 
+    mutate(forecast_dt = anytime(Date),
+           precipitation_prob = NA,
+           temperature = NA,
+           fc_horizon = paste0(days, " DAYS")) %>%
+    select(forecast_dt, precipitation_prob, temperature, weather_text, access_dt, fc_horizon, Temperature)
+}
+
+
+fc_1d <- get_daily_fc(1)
+fc_5d <- get_daily_fc(5) 
+fc_1d$max_temp <- fc_1d$Temperature$Maximum$Value
+fc_1d$min_temp <- fc_1d$Temperature$Minimum$Value
+fc_5d$max_temp <- fc_5d$Temperature$Maximum$Value
+fc_5d$min_temp <- fc_5d$Temperature$Minimum$Value
+fc_1d <- fc_1d %>% select(-Temperature)
+fc_5d <- fc_5d %>% select(-Temperature)
+
+```
+
+### Combine the forecasts
+
+I combine the four different forecast horizons into a single table.
+
+``` {r combine_fc}
+forecasts <- bind_rows(fc_12h, fc_1h, fc_1d, fc_5d)
+
+knitr::kable(head(forecasts, 5))
+```
+
+### Actual weather
+
+I only utilized a single API call for the actual weather history, so no need for a function.
+
+``` {r actual_weather}
+hist_24h <- fromJSON(paste0(api_root, "currentconditions/v1/", location_id, "/historical/24.json?&apikey=", key)) %>%
+  mutate(weather_dt = anytime(LocalObservationDateTime),
+         precipitation_f = ifelse(HasPrecipitation, 1, 0)) %>%
+  rename(weather_text = WeatherText, precipitation_type = PrecipitationType) %>%
+  select(weather_dt, weather_text, precipitation_f, precipitation_type, Temperature)
+hist_24h$temperature <- hist_24h$Temperature$Imperial$Value
+history <- hist_24h %>% select(-Temperature)
+
+knitr::kable(head(history, 5))
+```
+
+
+### Upload to Database
+Finally, I append both the forecast and actual data frames to the database tables.
+
+``` {r upload_db, warning = FALSE}
+conn <- odbcDriverConnect('driver={SQL Server};server=DESKTOP-SIIHDVF;database=UMP_HH;trusted_connection=true')
+sqlSave(conn, forecasts, "external_api.accuweather_forecast", append = TRUE, rownames = FALSE)
+sqlSave(conn, history, "external_api.accuweather_history", append = TRUE, rownames = FALSE)
+
+```
+
+### Visualizing the data
+
+To give an idea of what the data looks like so far I pulled the full set of data back into R. Below are plots showing the actual day time weather and the one-hour-ahead forecasts collected. You can see that there are both long periods of time with continuous observations and gaps.
+
+``` {r plot_weather, echo = FALSE}
+fc <- sqlQuery(conn, "select * from external_api.accuweather_forecast")
+actual <- sqlQuery(conn, "select * from external_api.accuweather_history")
+odbcClose(conn)
+
+actual2 <- actual %>%
+  mutate(weather_desc = as.factor(case_when(
+          trimws(weather_text) %in% c("Sunny", "Mostly sunny", "Partly sunny") ~ "Sun",
+          trimws(weather_text) %in% c("Mostly cloudy", "Cloudy", "Partly cloudy", "Fog") ~ "Clouds/Fog",
+          trimws(weather_text) %in% c("Light rain", "Rain", "Drizzle", "Thunderstorm") ~ "Rain",
+          trimws(weather_text) %in% c("Clear", "Mostly clear") ~ "Clear")),
+         night_day = as.factor(if_else(hour(weather_dt) >= 21 | hour(weather_dt) <= 6, "Night", "Day"))
+  ) %>%
+  filter(night_day == "Day")
+
+weather_colors <- c("Sun" = "#f9ba0c", "Clouds/Fog" = "#bcbcb8", "Rain" = "#2358dd")
+
+ggplot(actual2, aes(x = weather_dt)) +
+  geom_point(aes(y = temperature, color = weather_desc), alpha = 0.6) +
+  scale_color_manual(values = weather_colors) +
+  theme_dark() +
+  ggtitle("Actual Hourly weather observations collected, 6am - 9pm")
+
+
+fc2 <- fc %>%
+  filter(trimws(fc_horizon) == "1 HOURS") 
+
+ggplot(fc2, aes(x = forecast_dt)) +
+  geom_point(aes(y = temperature, color = precipitation_prob)) +
+  scale_colour_gradient(low = "#d1d4d6", high = "#0664a3") +
+  theme_dark() +
+  ggtitle("Next hour temperature and precipitation forecasts collected")
+
+```
