@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Xaringan on Chris Umphlett</title>
+    <link>/tags/xaringan/</link>
+    <description>Recent content in Xaringan on Chris Umphlett</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sat, 15 Jun 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/xaringan/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Automatic Feature Selection with R &amp; CART</title>
+      <link>/posts/automatic-feature-selection-with-r-cart/</link>
+      <pubDate>Sat, 15 Jun 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/automatic-feature-selection-with-r-cart/</guid>
+      <description>For a recent work project I had a statistical problem I had not dealt with before: multi-class classification. We have a system that can classify about 75% of phone calls, and I needed to classify the remainder into one of five types. The data also had what to me were many features (~300) and I wanted a way to dynamically select features as this classification would be performed weekly but the call data could change significantly from week-to-week and over time.</description>
+    </item>
+    
+  </channel>
+</rss>

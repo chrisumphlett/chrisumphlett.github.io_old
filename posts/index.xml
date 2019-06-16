@@ -6,10 +6,19 @@
     <description>Recent content in Posts on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 04 Jun 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 15 Jun 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Automatic Feature Selection with R &amp; CART</title>
+      <link>/posts/automatic-feature-selection-with-r-cart/</link>
+      <pubDate>Sat, 15 Jun 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/automatic-feature-selection-with-r-cart/</guid>
+      <description>For a recent work project I had a statistical problem I had not dealt with before: multi-class classification. We have a system that can classify about 75% of phone calls, and I needed to classify the remainder into one of five types. The data also had what to me were many features (~300) and I wanted a way to dynamically select features as this classification would be performed weekly but the call data could change significantly from week-to-week and over time.</description>
+    </item>
     
     <item>
       <title>Collecting data from the Accuweather API</title>
