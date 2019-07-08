@@ -6,10 +6,19 @@
     <description>Recent content in R on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 15 Jun 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 07 Jul 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Travel Bingo for Kids (Part 1)</title>
+      <link>/posts/travel-bingo-for-kids-part-1/</link>
+      <pubDate>Sun, 07 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/travel-bingo-for-kids-part-1/</guid>
+      <description>As a kid I spent a lot of time on road trips playing travel bingo. Recently I found some cards at a toy store while traveling with my own children and they enjoyed using them as well. I wanted the cards to work better for my kids, especially my three-year-old who can’t see that well out the window, so I decided to create my own before our next road trip a few weeks later.</description>
+    </item>
     
     <item>
       <title>Automatic Feature Selection with R &amp; CART</title>

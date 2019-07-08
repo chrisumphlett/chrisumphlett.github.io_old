@@ -1,0 +1,72 @@
+---
+title: Travel Bingo for Kids (Part 1)
+author: Chris Umphlett
+date: '2019-07-07'
+slug: travel-bingo-for-kids-part-1
+categories: []
+tags:
+  - R
+description: ''
+externalLink: ''
+---
+
+As a kid I spent a lot of time on road trips playing [travel bingo](https://www.amazon.com/Regal-Games-Original-Travel-Bingo/dp/B00YH96EGE/ref=asc_df_B00YH96EGE/?tag=hyprod-20&linkCode=df0&hvadid=198101676703&hvpos=1o1&hvnetw=g&hvrand=15708013385716908366&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9017265&hvtargid=pla-319284040200&psc=1). Recently I found some cards at a toy store while traveling with my own children and they enjoyed using them as well. I wanted the cards to work better for my kids, especially my three-year-old who can't see that well out the window, so I decided to create my own before our next road trip a few weeks later. This would allow me to not only change what was included, but create randomized cards that would have different items in a different order.
+
+To do this I used `ggplot` and its enhancement `ggimage` which can plot images saved locally or from a url. I quickly learned that the biggest issue were the images themselves-- I had to find free clip art that a three-year-old could interpret when printed in black and white on a half sheet of paper. 
+
+The result was not exactly pretty, but it works. It looks much nicer on the screen than it did when I printed it in grayscale on a home printer, but there are still issues with certain icons overlapping the cells because of the dimensions. The kids enjoyed using version 1.0.
+
+I am hoping to enhance the process by adding more bingo items and finding better pictures (anyone talented in making small black and white images?). If the list gets long enough I would customize the cards to make them skew more difficult for more older kids and to balance the type of items (eg, choose 4 of the 10 different street signs). I will also have it print the cards to a file with two cards per page in a printer-friendly format.
+
+The code and data (with image url's) are at the [github repo](https://github.com/chrisumphlett/travel_bingo).
+
+
+``` {r setup, message = FALSE, warning = FALSE}
+
+library(tidyverse)
+library(ggimage)
+
+bingo_items <- read_csv("DATA/bingo_items.csv")
+```
+
+For the purpose of this article I've put the code into a function that I can call multiple times to show how the cards are randomized.
+
+``` {r function, message = FALSE, warning = FALSE}
+random_bingo_card <- function() {
+  bingo_items2 <- bingo_items %>%
+    mutate(id = sample(nrow(.)), # randomly assign row numbers 
+           x = ceiling(id / 5), # assign to one of 5 columns
+           y = id %% 5, #assign to one of 5 rows
+           image_url = if_else(id == 12, NA_character_, image_url), # middle square should have no image
+           free = if_else(id == 12, "FREE", NA_character_)) %>% # middle square should say FREE
+    filter(id <= 25) # keep only 25 of the items
+  
+  plot <- ggplot(bingo_items2, aes(x = x, y = y)) +
+    geom_text(aes(label = free)) + # add FREE space text
+    geom_image(aes(image = image_url), size = 0.15) + # plot the images
+    scale_x_continuous(limits = c(0.5, 5.5)) +
+    scale_y_continuous(limits = c(-0.8, 4.8)) +
+    geom_vline(aes(xintercept = 4.5)) + # create the grid
+    geom_vline(aes(xintercept = 1.5)) +
+    geom_vline(aes(xintercept = 2.5)) +
+    geom_vline(aes(xintercept = 3.5)) +
+    geom_hline(aes(yintercept = 0.5)) + 
+    geom_hline(aes(yintercept = 1.5)) +
+    geom_hline(aes(yintercept = 2.5)) +
+    geom_hline(aes(yintercept = 3.5)) +
+    theme_void() + # remove all other them formats
+    theme(panel.border = element_rect(colour = "black", fill=NA, size=3)) + # add grid border
+    ggtitle("Travel Bingo\n")
+  
+ return(plot) 
+}
+
+```
+
+By calling this function twice I will generate two distinct, randomized bingo cards.
+
+``` {r generate_cards}
+random_bingo_card()
+
+random_bingo_card()
+```
