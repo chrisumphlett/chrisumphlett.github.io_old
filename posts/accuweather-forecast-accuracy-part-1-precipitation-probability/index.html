@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Chris Umphlett">
+    <meta name="description" content="Chris Umphlett&#39;s personal website">
+    <meta name="keywords" content="data science,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Accuweather forecast accuracy part 1: Hourly Precipitation probability"/>
+<meta name="twitter:description" content="Previously I wrote about how to get weather data from the Accuweather API with R. Now I will begin doing a series of analyses of the forecasts and the forecast accuracy, starting with the hourly forecast for precipitation probability. In addition to having fun with the data I hope to learn some things that may help me better utilize consumer weather forecasts in the future.
+The data I’ve collected includes forecasts for 1 to 12 hours in advance and the actual observations on an hourly and daily basis."/>
+
+
+    <base href="/posts/accuweather-forecast-accuracy-part-1-precipitation-probability/">
+    <title>
+  Accuweather forecast accuracy part 1: Hourly Precipitation probability · Chris Umphlett
+</title>
+
+    <link rel="canonical" href="/posts/accuweather-forecast-accuracy-part-1-precipitation-probability/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="/css/coder.min.ac37073bc2826cd28ef57364a9fe339de7ebcb26dafc22fd832cb35cf5b1d048.css" integrity="sha256-rDcHO8KCbNKO9XNkqf4znefryyba/CL9gyyzXPWx0Eg=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="/">
+      Chris Umphlett
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/now/">Now</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Accuweather forecast accuracy part 1: Hourly Precipitation probability</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-07-10T00:00:00Z'>
+                July 10, 2019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              7 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="/tags/r/">R</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+
+<p>Previously I wrote about <a href="https://chrisumphlett.github.io/posts/collecting-data-from-the-accuweather-api/">how to get weather data from the Accuweather API with R</a>. Now I will begin doing a series of analyses of the forecasts and the forecast accuracy, starting with the hourly forecast for precipitation probability. In addition to having fun with the data I hope to learn some things that may help me better utilize consumer weather forecasts in the future.</p>
+<p>The data I’ve collected includes forecasts for 1 to 12 hours in advance and the actual observations on an hourly and daily basis. A script runs hourly (when my laptop is on), connects to the API and appends the data to tables in a SQL Server database.</p>
+<div id="data-prep" class="section level3">
+<h3>Data Prep</h3>
+<pre class="r"><code>library(RODBC)
+library(tidyverse)
+library(lubridate)
+library(scoring)</code></pre>
+<pre class="r"><code># Connect to db and get fc and actual data
+conn &lt;- odbcDriverConnect(&#39;driver={SQL Server};server=DESKTOP-SIIHDVF;database=UMP_HH;trusted_connection=true&#39;)
+fc &lt;- sqlQuery(conn, &quot;select * from external_api.accuweather_forecast&quot;) %&gt;%
+  mutate(fc_date = as.Date(forecast_dt),
+         fc_hour = hour(forecast_dt),
+         horizon_hours = floor((forecast_dt - access_dt)/60)) %&gt;%
+  select(-weather_text, -min_temp, -max_temp) %&gt;%
+  rename(fc_temperature = temperature) %&gt;%
+  filter(trimws(fc_horizon) == &quot;12 HOURS&quot;, horizon_hours &gt; 0)
+actual &lt;- sqlQuery(conn, &quot;select * from external_api.accuweather_history&quot;) %&gt;%
+  mutate(weather_date = as.Date(weather_dt),
+         weather_hour = hour(weather_dt)) %&gt;%
+  distinct()
+odbcClose(conn)
+
+# join the data to get all instances where we have a forecast and actuals for the same hour
+precip &lt;- fc %&gt;%
+  inner_join(actual, by = c(&quot;fc_hour&quot; = &quot;weather_hour&quot;, &quot;fc_date&quot; = &quot;weather_date&quot;)) %&gt;%
+  select(forecast_dt, fc_date, fc_hour, horizon_hours, precipitation_prob, precipitation_f, temperature) %&gt;%
+  mutate(precipitation_f_fctr = as.factor(precipitation_f),
+         precip_prob = precipitation_prob / 100)</code></pre>
+</div>
+<div id="are-there-consumer-friendly-adjustments" class="section level3">
+<h3>Are there consumer-friendly adjustments?</h3>
+<p>From what I’ve read in the past I am expecting that the forecast may be biased by adjustments that make it more consumer friendly (e.g., more likely to be rounded to common percentages like 25% or multiples of ten). Let’s look at the forecast distribution in a histogram to see if that appears to be the case. I don’t know which precipitation probabilities might reasonably be higher or lower, but I do believe that there would not be a reason for 50 to be significantly higher than 49 and 51.</p>
+<pre class="r"><code>ggplot(precip) +
+  geom_histogram(aes(x = precipitation_prob), binwidth = 1) +
+  ggtitle(&quot;Frequency of forecast precipitation probabilities&quot;) +
+  theme_bw()</code></pre>
+<p><img src="/posts/2019-07-10-accuweather-forecast-accuracy-part-1-precipitation-probability_files/figure-html/precip_fc-1.png" width="672" /></p>
+<p>A few numbers pop:</p>
+<ul>
+<li>0, which seems reasonable</li>
+<li><ol start="7" style="list-style-type: decimal">
+<li>That doesn’t make any sense to me.</li>
+</ol></li>
+<li><ol start="20" style="list-style-type: decimal">
+<li>More forecasts have a 20% chance of precipitation than all other #’s from 15-25 combined.</li>
+</ol></li>
+<li>50ish. 50 for some reason is off-limits and never used, but 47, 49 and 51 are very common.</li>
+<li>I was surprised that there were not forecasts of precipitation probability greater than 75%. That could be a sample size issue and/or a result of evaluating hourly forecasts only.</li>
+</ul>
+<p>The spike at 20 and absence of any 50’s imply to me that the forecasts are adjusted, but as long as those adjustments are small the forecast’s probabilistic accuracy should not be significantly degraded.</p>
+</div>
+<div id="precipitation-probability-is-it-biased" class="section level3">
+<h3>Precipitation Probability: Is it biased?</h3>
+<p>An unbiased probabilistic forecast will, in the aggregate, look like a 45 degree line on a plot showing how often precipitation occurs. Events forecasted with a 20% probability should occur 20% of the time. Is that the case?</p>
+<p>Because there are not forecasts with a probability of every discrete integer value from 0 - 100, I group the probabilities by rounding to the closest 0.1. This should also help with some of the sample size and potential adjustment issues. Do the bucketed probabilities from 25 - 34% occur approximately 30% of the time?</p>
+<pre class="r"><code>precip_acc &lt;- precip %&gt;%
+  mutate(precip_prob_decile = round(precipitation_prob / 100, 1)) %&gt;%
+  group_by(precip_prob_decile) %&gt;%
+  summarise(pct_precip = mean(precipitation_f)) %&gt;%
+  ungroup()
+
+ggplot(precip_acc, aes(x = precip_prob_decile, y = pct_precip)) +
+  geom_line() +
+  geom_abline(slope = 1, color = &quot;red&quot;) +
+  ggtitle(&quot;Is the forecast biased? Compare to 45 degree line&quot;) +
+  theme_bw()</code></pre>
+<p><img src="/posts/2019-07-10-accuweather-forecast-accuracy-part-1-precipitation-probability_files/figure-html/precip_fc_accuracy1-1.png" width="672" /></p>
+<p>Below a 70% probability the forecast appears to be biased low– it rains much less often than one would expect based the probability. Around 50%, which was a very common forecast, it only rained about 25% of the time!</p>
+<p>This data is a mix of forecasts made over different horizons, from 1 to 12 hours in advance. Is the bias consistent across horizons?</p>
+<pre class="r"><code>precip_acc2 &lt;- precip %&gt;%
+  mutate(precip_prob_decile = round(precipitation_prob / 100, 1)) %&gt;%
+  group_by(horizon_hours, precip_prob_decile) %&gt;%
+  summarise(pct_precip = mean(precipitation_f)) %&gt;%
+  ungroup()
+
+ggplot(precip_acc2, aes(x = precip_prob_decile, y = pct_precip)) +
+  geom_line() +
+  geom_abline(slope = 1, color = &quot;red&quot;) +
+  facet_wrap(horizon_hours ~ .) +
+  ggtitle(&quot;Does FC Bias vary by FC horizon?&quot;) +
+  theme_bw()</code></pre>
+<p><img src="/posts/2019-07-10-accuweather-forecast-accuracy-part-1-precipitation-probability_files/figure-html/precip_fc_accuracy2-1.png" width="672" /></p>
+<p>Regardless of the forecast horizon the same pattern of bias emerges.</p>
+</div>
+<div id="forecast-accuray" class="section level3">
+<h3>Forecast Accuray</h3>
+<p>At this point I’m going far outside of my area of expertise. I do not think that the forecast evaluation methods I have used in my past experience will apply. Without consulting a meteorologist I can think of several distinguishing characteristics of weather:</p>
+<ul>
+<li>There is no truly binary outcome. If you feel a rain drop, does that mean it rained that hour? The binary assessment we are making is an oversimplification of something that can only be accurately measured on a continuous scale.</li>
+<li>The intensity or amount of precipitation matters. I would be more likely to take an umbrella for a 40% chance of a thunderstorm than a 90% chance of a sprinkle. Those who are creating consumer forecasts may be taking this into account.</li>
+</ul>
+<p>That said, I did a little bit of research to find at least one way that weather probability forecasts are scored in order to have a benchmark I can use as I evaluate different forecasts.</p>
+<p>According to <a href="https://www.cawcr.gov.au/projects/verification/">this web site</a> the brier score (BS) is a way to quantify probabilistic forecast error, and the brier skill score (BSS) to compare it to a benchmark (usually climatology, which I believe refers to historical rates). Below I will calculate BS using the <code>scoring</code> package and BSS using the baseline precipitation rate just from this forecast data set.</p>
+<pre class="r"><code>BS_overall &lt;- brierscore(precipitation_f ~ precip_prob, data = precip)
+BS_by_horizon &lt;- brierscore(precipitation_f ~ precip_prob, data = precip, group = &quot;horizon_hours&quot;)
+
+cat(paste0(&quot;Overall BS: &quot;, mean(BS_overall)))</code></pre>
+<pre><code>## Overall BS: 0.0895332146671413</code></pre>
+<pre class="r"><code>plot(BS_by_horizon$brieravg, caption = &quot;BS by forecast horizon&quot;)</code></pre>
+<p><img src="/posts/2019-07-10-accuweather-forecast-accuracy-part-1-precipitation-probability_files/figure-html/precip_fc_accuracy3-1.png" width="672" /></p>
+<p>The BS <em>seems</em> good (at least, coming from a context where generally the forecasting errors have been much greater than 10%). The error is higher as the horizon increases, but not by much.</p>
+<p>The formula for BSS is from the web site referenced above. It can range from minus infinity to 1, with 1 being a perfect score. It is simply 1 minus the ratio of the forecast BS to the baseline BS. A positive number represents improvement over the baseline.</p>
+<pre class="r"><code>baseline_precip_rate &lt;- mean(actual$precipitation_f)
+cat(paste0(&quot;% of actual hourly observations with precipitation: &quot;,
+           scales::percent(baseline_precip_rate)))</code></pre>
+<pre><code>## % of actual hourly observations with precipitation: 10.3%</code></pre>
+<pre class="r"><code># create baseline forecast
+baseline_fc &lt;- precip %&gt;%
+  select(horizon_hours, precipitation_f) %&gt;%
+  cbind(baseline_precip_rate)
+
+BS_ref &lt;- brierscore(precipitation_f ~ baseline_precip_rate, data = baseline_fc)
+
+cat(paste0(&quot;Baseline BS: &quot;, mean(BS_ref)))</code></pre>
+<pre><code>## Baseline BS: 0.0948434379153904</code></pre>
+<pre class="r"><code>cat(paste0(&quot;BSS = &quot;, (1 - (mean(BS_overall) / mean(BS_ref)))))</code></pre>
+<pre><code>## BSS = 0.0559893585150958</code></pre>
+<p>The BSS indicates that the forecast is an improvement over the baseline.</p>
+</div>
+<div id="takeaways" class="section level2">
+<h2>Takeaways</h2>
+<p>Any conclusions I would draw are made with much caution for several reasons:</p>
+<ol style="list-style-type: decimal">
+<li>I am not knowledgable of the standards for evaluating meteorological forecasts</li>
+<li>It is a limited sample. If I try to utilize this for my own interpretation of weather forecasts I do not think it wise to extrapolate to other seasons of the year and other types of precipitation. Weather also varies widely from year to year.</li>
+<li>I do not personally use Accuweather, and other consumer forecasts may differ significantly.</li>
+</ol>
+<p>That said, here are my takeaways:</p>
+<ul>
+<li>If you want to know whether or not it will rain, the forecast 12 hours in advance does almost as well as the 1 hour ahead forecast. <strong>When you look in the morning at the forecast for your afternoon commute, it will likely not change.</strong></li>
+<li>Lower precipitation probabilities tend to overforecast the likelihood of rain.</li>
+<li>The variability of hourly precipitation leads to forecasts that rarely forecast precipitation with a high probability. <strong>If you do not want to get caught in the rain, then do not disregard forecasts with a mid-to-high probability (50-75%).</strong></li>
+</ul>
+</div>
+
+      </div>
+
+      <footer>
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>A part of good science is to see what everyone else can see but to think what no one else has ever said. ~ Amos Tversky</p>
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+       · 
+      [<a href="https://github.com/luizdepra/hugo-coder/tree/"></a>]
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-124691894-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>

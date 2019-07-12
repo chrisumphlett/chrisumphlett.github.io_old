@@ -6,10 +6,20 @@
     <description>Recent content in Posts on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sun, 07 Jul 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 10 Jul 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Accuweather forecast accuracy part 1: Hourly Precipitation probability</title>
+      <link>/posts/accuweather-forecast-accuracy-part-1-precipitation-probability/</link>
+      <pubDate>Wed, 10 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/accuweather-forecast-accuracy-part-1-precipitation-probability/</guid>
+      <description>Previously I wrote about how to get weather data from the Accuweather API with R. Now I will begin doing a series of analyses of the forecasts and the forecast accuracy, starting with the hourly forecast for precipitation probability. In addition to having fun with the data I hope to learn some things that may help me better utilize consumer weather forecasts in the future.
+The data I’ve collected includes forecasts for 1 to 12 hours in advance and the actual observations on an hourly and daily basis.</description>
+    </item>
     
     <item>
       <title>Travel Bingo for Kids (Part 1)</title>

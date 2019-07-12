@@ -1,0 +1,167 @@
+---
+title: 'Accuweather forecast accuracy part 1: Hourly Precipitation probability'
+author: Chris Umphlett
+date: '2019-07-10'
+slug: accuweather-forecast-accuracy-part-1-precipitation-probability
+categories: []
+tags:
+  - R
+description: ''
+externalLink: ''
+---
+
+Previously I wrote about [how to get weather data from the Accuweather API with R](https://chrisumphlett.github.io/posts/collecting-data-from-the-accuweather-api/). Now I will begin doing a series of analyses of the forecasts and the forecast accuracy, starting with the hourly forecast for precipitation probability. In addition to having fun with the data I hope to learn some things that may help me better utilize consumer weather forecasts in the future.
+
+The data I've collected includes forecasts for 1 to 12 hours in advance and the actual observations on an hourly and daily basis. A script runs hourly (when my laptop is on), connects to the API and appends the data to tables in a SQL Server database.
+
+### Data Prep
+``` {r setup, message = FALSE, warning = FALSE}
+library(RODBC)
+library(tidyverse)
+library(lubridate)
+library(scoring)
+```
+
+``` {r get_data, message = FALSE, warning = FALSE}
+# Connect to db and get fc and actual data
+conn <- odbcDriverConnect('driver={SQL Server};server=DESKTOP-SIIHDVF;database=UMP_HH;trusted_connection=true')
+fc <- sqlQuery(conn, "select * from external_api.accuweather_forecast") %>%
+  mutate(fc_date = as.Date(forecast_dt),
+         fc_hour = hour(forecast_dt),
+         horizon_hours = floor((forecast_dt - access_dt)/60)) %>%
+  select(-weather_text, -min_temp, -max_temp) %>%
+  rename(fc_temperature = temperature) %>%
+  filter(trimws(fc_horizon) == "12 HOURS", horizon_hours > 0)
+actual <- sqlQuery(conn, "select * from external_api.accuweather_history") %>%
+  mutate(weather_date = as.Date(weather_dt),
+         weather_hour = hour(weather_dt)) %>%
+  distinct()
+odbcClose(conn)
+
+# join the data to get all instances where we have a forecast and actuals for the same hour
+precip <- fc %>%
+  inner_join(actual, by = c("fc_hour" = "weather_hour", "fc_date" = "weather_date")) %>%
+  select(forecast_dt, fc_date, fc_hour, horizon_hours, precipitation_prob, precipitation_f, temperature) %>%
+  mutate(precipitation_f_fctr = as.factor(precipitation_f),
+         precip_prob = precipitation_prob / 100)
+```
+
+### Are there consumer-friendly adjustments?
+
+From what I've read in the past I am expecting that the forecast may be biased by adjustments that make it more consumer friendly (e.g., more likely to be rounded to common percentages like 25% or multiples of ten). Let's look at the forecast distribution in a histogram to see if that appears to be the case. I don't know which precipitation probabilities might reasonably be higher or lower, but I do believe that there would not be a reason for 50 to be significantly higher than 49 and 51.
+
+``` {r precip_fc, message = FALSE, warning = FALSE}
+ggplot(precip) +
+  geom_histogram(aes(x = precipitation_prob), binwidth = 1) +
+  ggtitle("Frequency of forecast precipitation probabilities") +
+  theme_bw()
+```
+
+A few numbers pop:
+
+* 0, which seems reasonable
+* 7. That doesn't make any sense to me.
+* 20. More forecasts have a 20% chance of precipitation than all other #'s from 15-25 combined.
+* 50ish. 50 for some reason is off-limits and never used, but 47, 49 and 51 are very common.
+* I was surprised that there were not forecasts of precipitation probability greater than 75%. That could be a sample size issue and/or a result of evaluating hourly forecasts only.
+
+The spike at 20 and absence of any 50's imply to me that the forecasts are adjusted, but as long as those adjustments are small the forecast's probabilistic accuracy should not be significantly degraded.
+
+### Precipitation Probability: Is it biased?
+
+An unbiased probabilistic forecast will, in the aggregate, look like a 45 degree line on a plot showing how often precipitation occurs. Events forecasted with a 20% probability should occur 20% of the time. Is that the case?
+
+Because there are not forecasts with a probability of every discrete integer value from 0 - 100, I group the probabilities by rounding to the closest 0.1. This should also help with some of the sample size and potential adjustment issues. Do the bucketed probabilities from 25 - 34% occur approximately 30% of the time?
+
+``` {r precip_fc_accuracy1, message = FALSE, warning = FALSE}
+
+precip_acc <- precip %>%
+  mutate(precip_prob_decile = round(precipitation_prob / 100, 1)) %>%
+  group_by(precip_prob_decile) %>%
+  summarise(pct_precip = mean(precipitation_f)) %>%
+  ungroup()
+
+ggplot(precip_acc, aes(x = precip_prob_decile, y = pct_precip)) +
+  geom_line() +
+  geom_abline(slope = 1, color = "red") +
+  ggtitle("Is the forecast biased? Compare to 45 degree line") +
+  theme_bw()
+```
+
+Below a 70% probability the forecast appears to be biased low-- it rains much less often than one would expect based the probability. Around 50%, which was a very common forecast, it only rained about 25% of the time!
+
+This data is a mix of forecasts made over different horizons, from 1 to 12 hours in advance. Is the bias consistent across horizons?
+
+``` {r precip_fc_accuracy2, message = FALSE, warning = FALSE}
+
+precip_acc2 <- precip %>%
+  mutate(precip_prob_decile = round(precipitation_prob / 100, 1)) %>%
+  group_by(horizon_hours, precip_prob_decile) %>%
+  summarise(pct_precip = mean(precipitation_f)) %>%
+  ungroup()
+
+ggplot(precip_acc2, aes(x = precip_prob_decile, y = pct_precip)) +
+  geom_line() +
+  geom_abline(slope = 1, color = "red") +
+  facet_wrap(horizon_hours ~ .) +
+  ggtitle("Does FC Bias vary by FC horizon?") +
+  theme_bw()
+```
+
+Regardless of the forecast horizon the same pattern of bias emerges.
+
+### Forecast Accuray
+
+At this point I'm going far outside of my area of expertise. I do not think that the forecast evaluation methods I have used in my past experience will apply. Without consulting a meteorologist I can think of several distinguishing characteristics of weather:
+
+* There is no truly binary outcome. If you feel a rain drop, does that mean it rained that hour? The binary assessment we are making is an oversimplification of something that can only be accurately measured on a continuous scale.
+* The intensity or amount of precipitation matters. I would be more likely to take an umbrella for a 40% chance of a thunderstorm than a 90% chance of a sprinkle. Those who are creating consumer forecasts may be taking this into account.
+
+That said, I did a little bit of research to find at least one way that weather probability forecasts are scored in order to have a benchmark I can use as I evaluate different forecasts.
+
+According to [this web site](https://www.cawcr.gov.au/projects/verification/) the brier score (BS) is a way to quantify probabilistic forecast error, and the brier skill score (BSS) to compare it to a benchmark (usually climatology, which I believe refers to historical rates). Below I will calculate BS using the `scoring` package and BSS using the baseline precipitation rate just from this forecast data set.
+
+``` {r precip_fc_accuracy3, message = FALSE, warning = FALSE}
+BS_overall <- brierscore(precipitation_f ~ precip_prob, data = precip)
+BS_by_horizon <- brierscore(precipitation_f ~ precip_prob, data = precip, group = "horizon_hours")
+
+cat(paste0("Overall BS: ", mean(BS_overall)))
+
+plot(BS_by_horizon$brieravg, caption = "BS by forecast horizon")
+```
+
+The BS *seems* good (at least, coming from a context where generally the forecasting errors have been much greater than 10%). The error is higher as the horizon increases, but not by much. 
+
+The formula for BSS is from the web site referenced above. It can range from minus infinity to 1, with 1 being a perfect score. It is simply 1 minus the ratio of the forecast BS to the baseline BS. A positive number represents improvement over the baseline.
+
+``` {r precip_fc_accuracy4, message = FALSE, warning = FALSE}
+baseline_precip_rate <- mean(actual$precipitation_f)
+cat(paste0("% of actual hourly observations with precipitation: ",
+           scales::percent(baseline_precip_rate)))
+
+# create baseline forecast
+baseline_fc <- precip %>%
+  select(horizon_hours, precipitation_f) %>%
+  cbind(baseline_precip_rate)
+
+BS_ref <- brierscore(precipitation_f ~ baseline_precip_rate, data = baseline_fc)
+
+cat(paste0("Baseline BS: ", mean(BS_ref)))
+
+cat(paste0("BSS = ", (1 - (mean(BS_overall) / mean(BS_ref)))))
+```
+
+The BSS indicates that the forecast is an improvement over the baseline. 
+
+## Takeaways
+Any conclusions I would draw are made with much caution for several reasons:
+
+1. I am not knowledgable of the standards for evaluating meteorological forecasts
+2. It is a limited sample. If I try to utilize this for my own interpretation of weather forecasts I do not think it wise to extrapolate to other seasons of the year and other types of precipitation. Weather also varies widely from year to year.
+3. I do not personally use Accuweather, and other consumer forecasts may differ significantly.
+
+That said, here are my takeaways:
+
+* If you want to know whether or not it will rain, the forecast 12 hours in advance does almost as well as the 1 hour ahead forecast. **When you look in the morning at the forecast for your afternoon commute, it will likely not change.**
+* Lower precipitation probabilities tend to overforecast the likelihood of rain.
+* The variability of hourly precipitation leads to forecasts that rarely forecast precipitation with a high probability. **If you do not want to get caught in the rain, then do not disregard forecasts with a mid-to-high probability (50-75%).** 

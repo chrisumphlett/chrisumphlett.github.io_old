@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>/posts/accuweather-forecast-accuracy-part-1-precipitation-probability/</loc>
+    <lastmod>2019-07-10T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/posts/travel-bingo-for-kids-part-1/</loc>
     <lastmod>2019-07-07T00:00:00+00:00</lastmod>
   </url>
@@ -119,7 +124,7 @@
   
   <url>
     <loc>/</loc>
-    <lastmod>2019-07-07T00:00:00+00:00</lastmod>
+    <lastmod>2019-07-10T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -149,13 +154,13 @@
   
   <url>
     <loc>/posts/</loc>
-    <lastmod>2019-07-07T00:00:00+00:00</lastmod>
+    <lastmod>2019-07-10T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/tags/r/</loc>
-    <lastmod>2019-07-07T00:00:00+00:00</lastmod>
+    <lastmod>2019-07-10T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
