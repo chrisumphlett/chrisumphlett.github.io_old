@@ -74,7 +74,8 @@ Here is a link to the flipbook.</description>
       <pubDate>Wed, 06 Mar 2019 00:00:00 +0000</pubDate>
       
       <guid>/posts/vitae-package/</guid>
-      <description>A couple of months ago I came across the vitae package which was recently developed by Mitchell O’Hara Wild. I have been using the same basic resume template for over 10 years, mainly by default, but I really liked the layout offered by one of the vitae templates and the ability to build it with R Markdown turned a chore into something fun to do (keeping the resume current).</description>
+      <description>Updated Sept 25, 2019
+A couple of months ago I came across the vitae package which was recently developed by Mitchell O’Hara Wild. I have been using the same basic resume template for over 10 years, mainly by default, but I really liked the layout offered by one of the vitae templates and the ability to build it with R Markdown turned a chore into something fun to do (keeping the resume current).</description>
     </item>
     
   </channel>

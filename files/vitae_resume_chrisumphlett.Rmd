@@ -30,7 +30,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Data Science
 
-* Forecasting, supervised Machine Learning, big data wrangling, process automation, Discrete Event Simulation, Regression analysis, data quality enhancement, data visualization
+* Forecasting, machine learning, big data wrangling, process automation, Discrete Event Simulation, regression analysis, data quality enhancement, data visualization, classification, text mining
 
 ## Applications
 
@@ -38,21 +38,21 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Languages
 
-* R, SAS, SQL, VBA, Python (limited)
+* R, SAS (Base 9 Certified), SQL, VBA
 
 ## Leadership
 
-* Former non-profit board member and president, presenting information to mid-size audience, mentorship of peers, explaining technical material to non-technical audience and management, oversight of interns
+* Former non-profit board member and president, presenting information to mid-size audience, mentorship of peers, explaining technical material to non-technical audience and management, oversight of interns, change management
 
 # Experience
 ```{r}
 tribble(
   ~ role, ~ company, ~ loc, ~ dates, ~ details,
   "Data Scientist (contractor)", "Consumers Energy", "Jackson, MI", "Oct 2018 - Present", "Created new Customer Experience Index (CXi) automated reporting. I brought together transactions and survey responses from our web, call center and field channels from disparate sources and created the data architecture in SQL Server for storing the data. I developed code to calculate CXi across different levels of aggregation, create backups and automatically detect data quality issues.",
-  "Data Scientist (contractor)", "Consumers Energy", "Jackson, MI", "Oct 2018 - Present", "Development of speech analytics within Customer Operations utilizing Speechminer.",
+  "Data Scientist (contractor)", "Consumers Energy", "Jackson, MI", "Oct 2018 - Present", "Developing Machine Learning process to classify incoming phone caller intent utilizing Naive Bayes.",
+  "Data Scientist (contractor)", "Consumers Energy", "Jackson, MI", "Oct 2018 - Present", "Utilized various machine learning and statistical techniques to support analytical projects, such as k-modes classification, naive bayes, CART, anomaly detection and feature reduction.",
   "Data Scientist (contractor)", "Consumers Energy", "Jackson, MI", "Oct 2018 - Present", "Evaluated department's call center forecasting and provided recommended improvements in modeling methodology and benchmarking.",
   "Data Scientist (contractor)", "Consumers Energy", "Jackson, MI", "Oct 2018 - Present", "Discovered and remediated many data quality issues, teaching the team best practices for ensuring quality and catching errors.",
-  "Pro bono analytics consultant","Impression 5 Science Center","Lansing, MI"," Nov 2018 - Present", "Helping I5 calculate its member retention rate and then study and strategize how to improve and optimize its member renewal strategies.",
   "Sr Operations Business Process Analyst", "Jackson National Life", "Lansing, MI", "Mar 2012 - Sep 2018", "Learned and implemented machine learning and statistical processes, including: anomaly detection, force-directed network visualization, logistic regression, exponential smoothing, unobserved component models, automatic dimension reduction and variable selection, text mining, decision trees and fuzzy matching.",
   "Sr Operations Business Process Analyst", "Jackson National Life", "Lansing, MI", "Mar 2012 - Sep 2018", "Created automated forecasting system with semi-supervised machine learning umbrella to automate model parameterization. Forecasts are generated using Unobserved Component Modeling implemented with SAS PROC UCM.",
    "Sr Operations Business Process Analyst", "Jackson National Life", "Lansing, MI", "Mar 2012 - Sep 2018", "Connected to and queried directly from production DB2 databases using SAS SQL.",
