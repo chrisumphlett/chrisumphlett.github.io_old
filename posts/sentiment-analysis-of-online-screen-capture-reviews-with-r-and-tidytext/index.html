@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Chris Umphlett">
+    <meta name="description" content="Chris Umphlett&#39;s personal website">
+    <meta name="keywords" content="data science,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Sentiment analysis of online screen capture reviews with R and tidytext"/>
+<meta name="twitter:description" content="Lately I’ve been doing a lot of text mining at work, analyzing the relationship between various qualitative responses on customer surveys to the quantitative responses. On a given survey we may have several qualitative responses and I’m also working towards developing a generalized exploratory text and sentiment analysis that we can use to better determine what should be manually reviewed by business SME’s.
+In that vein I combined some of what I’ve been learning doing that with an analysis of customer reviews."/>
+
+
+    <base href="/posts/sentiment-analysis-of-online-screen-capture-reviews-with-r-and-tidytext/">
+    <title>
+  Sentiment analysis of online screen capture reviews with R and tidytext · Chris Umphlett
+</title>
+
+    <link rel="canonical" href="/posts/sentiment-analysis-of-online-screen-capture-reviews-with-r-and-tidytext/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="/css/coder.min.ac37073bc2826cd28ef57364a9fe339de7ebcb26dafc22fd832cb35cf5b1d048.css" integrity="sha256-rDcHO8KCbNKO9XNkqf4znefryyba/CL9gyyzXPWx0Eg=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="/">
+      Chris Umphlett
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/now/">Now</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Sentiment analysis of online screen capture reviews with R and tidytext</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-10-27T00:00:00Z'>
+                October 27, 2019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              9 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="/tags/r/">R</a>
+      <span class="separator">•</span>
+    <a href="/tags/text-mining/">text mining</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+
+
+<p>Lately I’ve been doing a lot of text mining at work, analyzing the relationship between various qualitative responses on customer surveys to the quantitative responses. On a given survey we may have several qualitative responses and I’m also working towards developing a generalized exploratory text and sentiment analysis that we can use to better determine what should be manually reviewed by business SME’s.</p>
+<p>In that vein I combined some of what I’ve been learning doing that with an analysis of customer reviews. Techsmith is a local company, based here in the Lansing, MI area, with several products used extensively (notably Snagit and Camtasia). In this article I show how I use R’s <code>tidytext</code> package to do exploratory text and sentiment analysis of Snagit reviews. This also gave me the opportunity to learn web scraping with the <code>rvest</code> package.</p>
+<div id="scraping-snagit-reviews" class="section level2">
+<h2>Scraping Snagit reviews</h2>
+<p>Online review sites typically solicit both quantitative and qualitative reviews of products. Numerical ratings (or star scales) can be aggregated to produce a single score across all reviews, making it easy to compare two competitors. As of 10/21/2019 G2.com has 2,607 reviews of Snagit with the average being 4.5 stars out of 5. TrustRadius.com has 225 reviews with the average being 9.1 out of 10. Loom, Snagit’s closest competitor as far as I can tell, has 37 and 28 reviews at the two sites respectively, with averages of 4.5 stars and 9.3. Unfortunately for this analysis G2.com explicitly does not allow web-scraping of its web site, even for <em>non-commercial use</em>. I did not find any prohibition at TrustRadius, and the rest of my analysis is focused on TrustRadius.</p>
+<p>Using the <code>rvest</code> package I can pull the text from particular CSS sections at a web page into R. The <em>Selector Gadget</em> Chrome extension enables you to easily select sections of a web page and identifies the CSS label to use in <code>rvest::html_nodes()</code>. In this case I was able to pull all of the text with no line breaks or formatting for each review. I could differentiate sections of the review based on the headers, as well as get the score. Importantly, I could not distinguish “pros” from “cons” because the icon at the site was not represented in the data. Below is a sample of the unstructured text data first pulled into R in the first column, and then parsed into several sections.</p>
+<pre class="r"><code>scrape_reviews &lt;- function(url) {
+  webpage &lt;- read_html(url)
+  h_text_list &lt;- list()
+  for (i in 1:25) {
+    h_node &lt;- html_nodes(webpage, paste0(&quot;.serpHit&quot;, i))
+    h_text &lt;- html_text(h_node)
+    h_text_list[[i]] &lt;- h_text
+  }  
+  
+  df &lt;- as.data.frame(unlist(h_text_list)) %&gt;%
+    filter(`unlist(h_text_list)` != &quot;&quot;)
+  return(df)
+}
+
+rev1 &lt;- scrape_reviews(&quot;https://www.trustradius.com/products/snagit/reviews&quot;)
+rev2 &lt;- scrape_reviews(&quot;https://www.trustradius.com/products/snagit/reviews?f=25&quot;)
+
+snag_reviews &lt;- bind_rows(rev1, rev2) %&gt;%
+  mutate(review_id = as.character(row_number()),
+         all_text = as.character(`unlist(h_text_list)`))
+
+snag_reviews2 &lt;- snag_reviews %&gt;%
+  mutate(score_start_pos = str_locate(snag_reviews$all_text, pattern =&#39;Score&#39;)[, 1],
+         review_start_pos = str_locate(snag_reviews$all_text, pattern =&#39;Use Cases and Deployment Scope&#39;)[, 1],
+         proscons_start_pos = str_locate(snag_reviews$all_text, pattern =&#39;Pros and Cons&#39;)[, 1],
+         recommend_start_pos = str_locate(snag_reviews$all_text, pattern =&#39;Likelihood to Recommend&#39;)[, 1],
+         recommend_end_pos = str_locate(snag_reviews$all_text, pattern =&#39;.Read &#39;)[, 1],
+         score = as.numeric(substr(all_text, score_start_pos + 6, score_start_pos + 7)),
+         review = substr(all_text, review_start_pos + 30, proscons_start_pos),
+         proscons = substr(all_text, proscons_start_pos + 13, recommend_start_pos),
+         recommend = substr(all_text, recommend_start_pos + 23,  recommend_end_pos),
+         review_text = paste0(review, &quot; &quot;, proscons, &quot; &quot;, recommend)) %&gt;%
+  select(review_id, all_text, score, review_text, review, proscons, recommend)
+
+#show first snagit review
+knitr::kable(filter(snag_reviews2, row_number() == 1)) %&gt;%
+  kable_styling(font_size = 12)</code></pre>
+<table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+review_id
+</th>
+<th style="text-align:left;">
+all_text
+</th>
+<th style="text-align:right;">
+score
+</th>
+<th style="text-align:left;">
+review_text
+</th>
+<th style="text-align:left;">
+review
+</th>
+<th style="text-align:left;">
+proscons
+</th>
+<th style="text-align:left;">
+recommend
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+August 29, 2019All in one tool with a great editor.Dinesh SelvachandraBusiness Process AnalystJadon Software SolutionsComputer Software, 11-50 employeesScore 9 out of 10Vetted ReviewVerified UserReview SourceUse Cases and Deployment ScopeAs a software company, we often need to create user documents and presentations based on application screenshots. Snagit makes it easy to draw an illustrate the functionalities in a very clean graphical manner.Pros and ConsEasy to useFull of features and many export options.Editing is very easy and all the necessary tools are available.there are multiple modes of capture, even video with makes it an all in one tool.EditThe software has gotten very big with new versions.Unable to do partial scroll capture.The quick capture tool is big, sometimes its annoying.Likelihood to RecommendWhen you need to get some graphical document done base on screenshots, this is the best all in one solution out there.Read Dinesh Selvachandra’s full review
+</td>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:left;">
+As a software company, we often need to create user documents and presentations based on application screenshots. Snagit makes it easy to draw an illustrate the functionalities in a very clean graphical manner.P Easy to useFull of features and many export options.Editing is very easy and all the necessary tools are available.there are multiple modes of capture, even video with makes it an all in one tool.EditThe software has gotten very big with new versions.Unable to do partial scroll capture.The quick capture tool is big, sometimes its annoying.L When you need to get some graphical document done base on screenshots, this is the best all in one solution out there.
+</td>
+<td style="text-align:left;">
+As a software company, we often need to create user documents and presentations based on application screenshots. Snagit makes it easy to draw an illustrate the functionalities in a very clean graphical manner.P
+</td>
+<td style="text-align:left;">
+Easy to useFull of features and many export options.Editing is very easy and all the necessary tools are available.there are multiple modes of capture, even video with makes it an all in one tool.EditThe software has gotten very big with new versions.Unable to do partial scroll capture.The quick capture tool is big, sometimes its annoying.L
+</td>
+<td style="text-align:left;">
+When you need to get some graphical document done base on screenshots, this is the best all in one solution out there.
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="exploratory-analysis" class="section level2">
+<h2>Exploratory analysis</h2>
+<div id="review-scores" class="section level3">
+<h3>Review scores</h3>
+<p>The histograms show that the distribution of reviews is similar except for the one 4 given to SnagIt. This one review appears to be an outlier– it is the only score under 5 for all 225 numerical scores at TrustRadius.com.</p>
+<p>The total counts show that I am missing two of the Snagit reviews that were not scraped correctly.</p>
+<pre class="r"><code>ggplot(snag_reviews2, aes(x = score)) + 
+  geom_histogram() +
+  labs(title = &quot;Histogram of scores&quot;) +
+  theme_bw()</code></pre>
+<p><img src="/posts/2019-10-27-sentiment-analysis-of-online-screen-capture-reviews-with-r-and-tidytext_files/figure-html/eda-1.png" width="672" /></p>
+</div>
+<div id="review-text" class="section level3">
+<h3>Review text</h3>
+<p>Text analysis is often done by converting a section of text into a <em>bag of words</em>, separating it into its individual words without preserving the order. I converted each section of the review into its bag of words, also removing punctuation, stop words (like “I” and “is”) and converted to lowercase. I ultimately decided that there was little value in doing the analysis by section of review and looked at the bag of words for the entire review. I excluded some words that I found later had a different sentiment in this context than that which is given to them later in the sentiment analysis. For instance, ‘cad’ is a negative word according to the sentiment dictionary, but in this context it’s a proper noun referring to a type of software.</p>
+<p>I explored the text by identifying the words that occured most frequently across all reviews. The WordCloud represents the top 10% most frequently occuring words.</p>
+<pre class="r"><code>exclude_words &lt;- c(&quot;loom&quot;, &quot;snag&quot;, &quot;cad&quot;, &quot;default&quot;, &quot;powerful&quot;, &quot;gray&quot;, &quot;white&quot;, &quot;larger&quot;, &quot;account&quot;, &quot;organization&quot;)
+
+snag_words &lt;- snag_reviews2 %&gt;%
+  select(review_id, review_text) %&gt;%
+  unnest_tokens(word, review_text) %&gt;%
+  anti_join(stop_words) %&gt;%
+  filter(!word %in% exclude_words)
+
+word_freq &lt;- snag_words %&gt;%
+  group_by(word) %&gt;%
+  summarise(word_count = n()) %&gt;%
+  ungroup() %&gt;%
+  arrange(-word_count)
+
+# get top 10 % most frequent
+top10_words_snag &lt;- word_freq %&gt;%
+  filter(row_number() &lt; nrow(word_freq) * 0.1)
+
+wordcloud::wordcloud(top10_words_snag$word, top10_words_snag$word_count, colors=brewer.pal(8, &quot;Dark2&quot;), random.order = FALSE)</code></pre>
+<p><img src="/posts/2019-10-27-sentiment-analysis-of-online-screen-capture-reviews-with-r-and-tidytext_files/figure-html/tidy_words-1.png" width="672" /></p>
+</div>
+</div>
+<div id="customer-sentiment-analysis" class="section level2">
+<h2>Customer Sentiment Analysis</h2>
+<p>Using a bag of words approach, sentiments can be attached to applicable words and then aggregated to measure sentiment for an entire review or across reviews. Using R’s <code>tidytext</code> package, the <code>bing</code> dictionary assigns positive or negative sentiment to words and the <code>nrc</code> dictionary classifies words into discrete emotions. The net of the positive and negative provides a single score, <code>net_bing_sentiment</code>, for each review.</p>
+<p>A few rows of this data is shown, displaying the count of words for each sentiment in each review. It is also plotted against the reviews to show that the expected association is there.</p>
+<pre class="r"><code>review_bing_sentiment &lt;- snag_words %&gt;%
+  inner_join(get_sentiments(&quot;bing&quot;)) %&gt;%
+  rename(bing = sentiment) %&gt;%
+  group_by(review_id, bing) %&gt;%
+  summarise(count = n()) %&gt;%
+  ungroup() %&gt;%
+  spread(bing, count, sep = &quot;_&quot;, fill = 0) %&gt;%
+  mutate(net_bing_sentiment = bing_positive - bing_negative)
+
+review_nrc_sentiment &lt;- snag_words %&gt;%
+  inner_join(get_sentiments(&quot;nrc&quot;)) %&gt;%
+  rename(nrc = sentiment) %&gt;%
+  group_by(review_id, nrc) %&gt;%
+  summarise(count = n()) %&gt;%
+  ungroup() %&gt;%
+  filter(!nrc %in% c(&quot;negative&quot;, &quot;positive&quot;)) %&gt;%
+  spread(nrc, count, sep = &quot;_&quot;, fill = 0)
+
+review_scores &lt;- snag_reviews2 %&gt;%
+  select(review_id, score)
+
+review_sentiment &lt;- full_join(review_bing_sentiment, review_nrc_sentiment) %&gt;%
+  mutate(review_id = as.character(review_id)) %&gt;%
+  mutate_if(is.numeric, ~ if_else(is.na(.), 0, .)) %&gt;%
+  left_join(review_scores)
+
+head(review_sentiment)</code></pre>
+<pre><code>## # A tibble: 6 x 13
+##   review_id bing_negative bing_positive net_bing_sentim~ nrc_anger
+##   &lt;chr&gt;             &lt;dbl&gt;         &lt;dbl&gt;            &lt;dbl&gt;     &lt;dbl&gt;
+## 1 1                     0             4                4         0
+## 2 10                    1             3                2         2
+## 3 11                    1             5                4         0
+## 4 12                    4             2               -2         2
+## 5 13                    5             7                2         3
+## 6 14                    2             5                3         1
+## # ... with 8 more variables: nrc_anticipation &lt;dbl&gt;, nrc_disgust &lt;dbl&gt;,
+## #   nrc_fear &lt;dbl&gt;, nrc_joy &lt;dbl&gt;, nrc_sadness &lt;dbl&gt;, nrc_surprise &lt;dbl&gt;,
+## #   nrc_trust &lt;dbl&gt;, score &lt;dbl&gt;</code></pre>
+<p>I started this analysis with the assumption that review scores would be generally correlated with the sentiment of the review text. This scatterplot with linear trendline shows that the assumption holds.</p>
+<pre class="r"><code>ggplot(review_sentiment, aes(y = score, x = net_bing_sentiment)) +
+  geom_jitter(color = &quot;black&quot;, alpha = 0.6) +
+  geom_smooth(method = &quot;lm&quot;, color = &quot;blue&quot;, se = F) +
+  labs(title = &quot;Net customer sentiment is positively correlated with review score&quot;) +
+  theme_classic()</code></pre>
+<p><img src="/posts/2019-10-27-sentiment-analysis-of-online-screen-capture-reviews-with-r-and-tidytext_files/figure-html/scatter-1.png" width="672" /></p>
+</div>
+<div id="which-nrc-sentiments-contribute-the-most-to-the-reviews" class="section level2">
+<h2>Which nrc sentiments contribute the most to the reviews?</h2>
+<p>After showing that the net positivity of the review is correlated with the score I wanted to explore the impact of the specific sentiments on the review scores. I created a similar plot as the one above but faceted by the sentiment counted.</p>
+<p>For most of the sentiments there appears to be little correlation. I wished there had been more surveys in order to provide more variation in the scores and more frequency of words and sentiments.</p>
+<p>For Snagit, the users who expressed the most joy gave consistently high reviews. Those giving a score of 8 or lower used no more than five joy words. Disgust, which appears to have a steep negative association, is primarily driven by the one reviewer who gave a 4. They still only used two words characterized as disgust.</p>
+<p>The analysis would potentially be more valuable if there were 100+ reviews with more low scores to help tease out the drivers of dissatisfaction.</p>
+<pre class="r"><code>nrc_sentiment &lt;- snag_words %&gt;%
+  inner_join(get_sentiments(&quot;nrc&quot;)) %&gt;%
+  group_by(review_id, sentiment) %&gt;%
+  summarise(count = n()) %&gt;%
+  ungroup() %&gt;%
+  filter(!sentiment %in% c(&quot;negative&quot;, &quot;positive&quot;)) %&gt;%
+  left_join(review_scores)
+
+ggplot(nrc_sentiment, aes(x = count, y = score)) +
+  geom_jitter(alpha = 0.4, size = 2) +
+  geom_smooth(se = F, method = &quot;lm&quot;) +
+  facet_wrap(. ~ sentiment, scales = &quot;free_x&quot;) +
+  theme_classic() +
+  theme(legend.position = &quot;top&quot;)</code></pre>
+<p><img src="/posts/2019-10-27-sentiment-analysis-of-online-screen-capture-reviews-with-r-and-tidytext_files/figure-html/facet_sent-1.png" width="672" /></p>
+</div>
+
+      </div>
+
+      <footer>
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>A part of good science is to see what everyone else can see but to think what no one else has ever said. ~ Amos Tversky</p>
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+       · 
+      [<a href="https://github.com/luizdepra/hugo-coder/tree/"></a>]
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-124691894-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>

@@ -6,10 +6,20 @@
     <description>Recent content in Posts on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 10 Jul 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 27 Oct 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Sentiment analysis of online screen capture reviews with R and tidytext</title>
+      <link>/posts/sentiment-analysis-of-online-screen-capture-reviews-with-r-and-tidytext/</link>
+      <pubDate>Sun, 27 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/sentiment-analysis-of-online-screen-capture-reviews-with-r-and-tidytext/</guid>
+      <description>Lately I’ve been doing a lot of text mining at work, analyzing the relationship between various qualitative responses on customer surveys to the quantitative responses. On a given survey we may have several qualitative responses and I’m also working towards developing a generalized exploratory text and sentiment analysis that we can use to better determine what should be manually reviewed by business SME’s.
+In that vein I combined some of what I’ve been learning doing that with an analysis of customer reviews.</description>
+    </item>
     
     <item>
       <title>Accuweather forecast accuracy part 1: Hourly Precipitation probability</title>

@@ -59,7 +59,7 @@
     <item>
       <title>R</title>
       <link>/tags/r/</link>
-      <pubDate>Wed, 10 Jul 2019 00:00:00 +0000</pubDate>
+      <pubDate>Sun, 27 Oct 2019 00:00:00 +0000</pubDate>
       
       <guid>/tags/r/</guid>
       <description></description>
@@ -71,6 +71,15 @@
       <pubDate>Tue, 04 Jun 2019 00:00:00 +0000</pubDate>
       
       <guid>/tags/sql-server/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Text Mining</title>
+      <link>/tags/text-mining/</link>
+      <pubDate>Sun, 27 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/text-mining/</guid>
       <description></description>
     </item>
     

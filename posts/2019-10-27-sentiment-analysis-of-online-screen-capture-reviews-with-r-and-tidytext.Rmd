@@ -1,0 +1,194 @@
+---
+title: "Sentiment analysis of online screen capture reviews with R and tidytext"
+author: "Chris Umphlett"
+date: '2019-10-27'
+description: ''
+externalLink: ''
+slug: sentiment-analysis-of-online-screen-capture-reviews-with-r-and-tidytext
+tags:
+- R
+- text mining
+categories: []
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(rvest)
+library(stringr)
+library(tidytext)
+library(textdata)
+library(RColorBrewer)
+library(fastDummies)
+library(broom)
+library(kableExtra)
+library(tidyverse)
+```
+
+Lately I've been doing a lot of text mining at work, analyzing the relationship between various qualitative responses on customer surveys to the quantitative responses. On a given survey we may have several qualitative responses and I'm also working towards developing a generalized exploratory text and sentiment analysis that we can use to better determine what should be manually reviewed by business SME's.
+
+In that vein I combined some of what I've been learning doing that with an analysis of customer reviews. Techsmith is a local company, based here in the Lansing, MI area, with several products used extensively (notably Snagit and Camtasia). In this article I show how I use R's `tidytext` package to do exploratory text and sentiment analysis of Snagit reviews. This also gave me the opportunity to learn web scraping with the `rvest` package. 
+
+## Scraping Snagit reviews
+
+Online review sites typically solicit both quantitative and qualitative reviews of products. Numerical ratings (or star scales) can be aggregated to produce a single score across all reviews, making it easy to compare two competitors. As of 10/21/2019 G2.com has 2,607 reviews of Snagit with the average being 4.5 stars out of 5. TrustRadius.com has 225 reviews with the average being 9.1 out of 10. Loom, Snagit's closest competitor as far as I can tell, has 37 and 28 reviews at the two sites respectively, with averages of 4.5 stars and 9.3. Unfortunately for this analysis G2.com explicitly does not allow web-scraping of its web site, even for *non-commercial use*. I did not find any prohibition at TrustRadius, and the rest of my analysis is focused on TrustRadius.
+
+
+Using the `rvest` package I can pull the text from particular CSS sections at a web page into R. The *Selector Gadget* Chrome extension enables you to easily select sections of a web page and identifies the CSS label to use in `rvest::html_nodes()`. In this case I was able to pull all of the text with no line breaks or formatting for each review. I could differentiate sections of the review based on the headers, as well as get the score. Importantly, I could not distinguish "pros" from "cons" because the icon at the site was not represented in the data. Below is a sample of the unstructured text data first pulled into R in the first column, and then parsed into several sections.
+``` {r get_data}
+
+scrape_reviews <- function(url) {
+  webpage <- read_html(url)
+  h_text_list <- list()
+  for (i in 1:25) {
+    h_node <- html_nodes(webpage, paste0(".serpHit", i))
+    h_text <- html_text(h_node)
+    h_text_list[[i]] <- h_text
+  }  
+  
+  df <- as.data.frame(unlist(h_text_list)) %>%
+    filter(`unlist(h_text_list)` != "")
+  return(df)
+}
+
+rev1 <- scrape_reviews("https://www.trustradius.com/products/snagit/reviews")
+rev2 <- scrape_reviews("https://www.trustradius.com/products/snagit/reviews?f=25")
+
+snag_reviews <- bind_rows(rev1, rev2) %>%
+  mutate(review_id = as.character(row_number()),
+         all_text = as.character(`unlist(h_text_list)`))
+
+snag_reviews2 <- snag_reviews %>%
+  mutate(score_start_pos = str_locate(snag_reviews$all_text, pattern ='Score')[, 1],
+         review_start_pos = str_locate(snag_reviews$all_text, pattern ='Use Cases and Deployment Scope')[, 1],
+         proscons_start_pos = str_locate(snag_reviews$all_text, pattern ='Pros and Cons')[, 1],
+         recommend_start_pos = str_locate(snag_reviews$all_text, pattern ='Likelihood to Recommend')[, 1],
+         recommend_end_pos = str_locate(snag_reviews$all_text, pattern ='.Read ')[, 1],
+         score = as.numeric(substr(all_text, score_start_pos + 6, score_start_pos + 7)),
+         review = substr(all_text, review_start_pos + 30, proscons_start_pos),
+         proscons = substr(all_text, proscons_start_pos + 13, recommend_start_pos),
+         recommend = substr(all_text, recommend_start_pos + 23,  recommend_end_pos),
+         review_text = paste0(review, " ", proscons, " ", recommend)) %>%
+  select(review_id, all_text, score, review_text, review, proscons, recommend)
+
+#show first snagit review
+knitr::kable(filter(snag_reviews2, row_number() == 1)) %>%
+  kable_styling(font_size = 12)
+```
+
+## Exploratory analysis
+
+### Review scores
+
+The histograms show that the distribution of reviews is similar except for the one 4 given to SnagIt. This one review appears to be an outlier-- it is the only score under 5 for all 225 numerical scores at TrustRadius.com. 
+
+The total counts show that I am missing two of the Snagit reviews that were not scraped correctly.
+
+``` {r eda}
+ggplot(snag_reviews2, aes(x = score)) + 
+  geom_histogram() +
+  labs(title = "Histogram of scores") +
+  theme_bw()
+```
+
+### Review text
+
+Text analysis is often done by converting a section of text into a *bag of words*, separating it into its individual words without preserving the order. I converted each section of the review into its bag of words, also removing punctuation, stop words (like "I" and "is") and converted to lowercase. I ultimately decided that there was little value in doing the analysis by section of review and looked at the bag of words for the entire review. I excluded some words that I found later had a different sentiment in this context than that which is given to them later in the sentiment analysis. For instance, 'cad' is a negative word according to the sentiment dictionary, but in this context it's a proper noun referring to a type of software.
+
+I explored the text by identifying the words that occured most frequently across all reviews. The WordCloud represents the top 10% most frequently occuring words. 
+
+``` {r tidy_words}
+exclude_words <- c("loom", "snag", "cad", "default", "powerful", "gray", "white", "larger", "account", "organization")
+
+snag_words <- snag_reviews2 %>%
+  select(review_id, review_text) %>%
+  unnest_tokens(word, review_text) %>%
+  anti_join(stop_words) %>%
+  filter(!word %in% exclude_words)
+
+word_freq <- snag_words %>%
+  group_by(word) %>%
+  summarise(word_count = n()) %>%
+  ungroup() %>%
+  arrange(-word_count)
+
+# get top 10 % most frequent
+top10_words_snag <- word_freq %>%
+  filter(row_number() < nrow(word_freq) * 0.1)
+
+wordcloud::wordcloud(top10_words_snag$word, top10_words_snag$word_count, colors=brewer.pal(8, "Dark2"), random.order = FALSE)
+
+```
+
+## Customer Sentiment Analysis
+
+Using a bag of words approach, sentiments can be attached to applicable words and then aggregated to measure sentiment for an entire review or across reviews. Using R's `tidytext` package, the `bing` dictionary assigns positive or negative sentiment to words and the `nrc` dictionary classifies words into discrete emotions. The net of the positive and negative provides a single score, `net_bing_sentiment`, for each review.
+
+A few rows of this data is shown, displaying the count of words for each sentiment in each review. It is also plotted against the reviews to show that the expected association is there.
+
+``` {r assign_sentiment}
+review_bing_sentiment <- snag_words %>%
+  inner_join(get_sentiments("bing")) %>%
+  rename(bing = sentiment) %>%
+  group_by(review_id, bing) %>%
+  summarise(count = n()) %>%
+  ungroup() %>%
+  spread(bing, count, sep = "_", fill = 0) %>%
+  mutate(net_bing_sentiment = bing_positive - bing_negative)
+
+review_nrc_sentiment <- snag_words %>%
+  inner_join(get_sentiments("nrc")) %>%
+  rename(nrc = sentiment) %>%
+  group_by(review_id, nrc) %>%
+  summarise(count = n()) %>%
+  ungroup() %>%
+  filter(!nrc %in% c("negative", "positive")) %>%
+  spread(nrc, count, sep = "_", fill = 0)
+
+review_scores <- snag_reviews2 %>%
+  select(review_id, score)
+
+review_sentiment <- full_join(review_bing_sentiment, review_nrc_sentiment) %>%
+  mutate(review_id = as.character(review_id)) %>%
+  mutate_if(is.numeric, ~ if_else(is.na(.), 0, .)) %>%
+  left_join(review_scores)
+
+head(review_sentiment)
+```
+
+I started this analysis with the assumption that review scores would be generally correlated with the sentiment of the review text. This scatterplot with linear trendline shows that the assumption holds.
+
+``` {r scatter}
+ggplot(review_sentiment, aes(y = score, x = net_bing_sentiment)) +
+  geom_jitter(color = "black", alpha = 0.6) +
+  geom_smooth(method = "lm", color = "blue", se = F) +
+  labs(title = "Net customer sentiment is positively correlated with review score") +
+  theme_classic()
+```
+
+## Which nrc sentiments contribute the most to the reviews?
+
+After showing that the net positivity of the review is correlated with the score I wanted to explore the impact of the specific sentiments on the review scores. I created a similar plot as the one above but faceted by the sentiment counted.
+
+For most of the sentiments there appears to be little correlation. I wished there had been more surveys in order to provide more variation in the scores and more frequency of words and sentiments. 
+
+For Snagit, the users who expressed the most joy gave consistently high reviews. Those giving a score of 8 or lower used no more than five joy words. Disgust, which appears to have a steep negative association, is primarily driven by the one reviewer who gave a 4. They still only used two words characterized as disgust.
+
+The analysis would potentially be more valuable if there were 100+ reviews with more low scores to help tease out the drivers of dissatisfaction.
+
+``` {r facet_sent}
+nrc_sentiment <- snag_words %>%
+  inner_join(get_sentiments("nrc")) %>%
+  group_by(review_id, sentiment) %>%
+  summarise(count = n()) %>%
+  ungroup() %>%
+  filter(!sentiment %in% c("negative", "positive")) %>%
+  left_join(review_scores)
+
+ggplot(nrc_sentiment, aes(x = count, y = score)) +
+  geom_jitter(alpha = 0.4, size = 2) +
+  geom_smooth(se = F, method = "lm") +
+  facet_wrap(. ~ sentiment, scales = "free_x") +
+  theme_classic() +
+  theme(legend.position = "top")
+```

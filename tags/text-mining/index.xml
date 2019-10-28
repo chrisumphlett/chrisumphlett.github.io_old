@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Text Mining on Chris Umphlett</title>
+    <link>/tags/text-mining/</link>
+    <description>Recent content in Text Mining on Chris Umphlett</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sun, 27 Oct 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/text-mining/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Sentiment analysis of online screen capture reviews with R and tidytext</title>
+      <link>/posts/sentiment-analysis-of-online-screen-capture-reviews-with-r-and-tidytext/</link>
+      <pubDate>Sun, 27 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/sentiment-analysis-of-online-screen-capture-reviews-with-r-and-tidytext/</guid>
+      <description>Lately I’ve been doing a lot of text mining at work, analyzing the relationship between various qualitative responses on customer surveys to the quantitative responses. On a given survey we may have several qualitative responses and I’m also working towards developing a generalized exploratory text and sentiment analysis that we can use to better determine what should be manually reviewed by business SME’s.
+In that vein I combined some of what I’ve been learning doing that with an analysis of customer reviews.</description>
+    </item>
+    
+  </channel>
+</rss>
