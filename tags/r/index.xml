@@ -18,7 +18,8 @@
       
       <guid>/posts/my-first-r-package-openendedanalyzer/</guid>
       <description>Recently I created my first R package and deployed it to GitHub. I developed it as part of my work at Consumers Energy, working with survey data frequently to help improve customer experience. Below is the vignette that I have created to document the basic usage of the package.
-openEndedAnalyzeR enables fast, pre-packaged analysis of qualitative survey responses (“open-ended” or “verbatims”). It is built on the framework of the tidytext package.</description>
+You can visit the site repo and get installation instructions here.
+openEndedAnalyzeR enables fast, pre-packaged analysis of qualitative survey responses (“open-ended” or “verbatims”).</description>
     </item>
     
     <item>
