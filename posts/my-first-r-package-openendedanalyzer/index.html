@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Chris Umphlett">
+    <meta name="description" content="Chris Umphlett&#39;s personal website">
+    <meta name="keywords" content="data science,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="My first R package: openEndedAnalyzeR"/>
+<meta name="twitter:description" content="Recently I created my first R package and deployed it to GitHub. I developed it as part of my work at Consumers Energy, working with survey data frequently to help improve customer experience. Below is the vignette that I have created to document the basic usage of the package.
+openEndedAnalyzeR enables fast, pre-packaged analysis of qualitative survey responses (“open-ended” or “verbatims”). It is built on the framework of the tidytext package."/>
+
+
+    <base href="/posts/my-first-r-package-openendedanalyzer/">
+    <title>
+  My first R package: openEndedAnalyzeR · Chris Umphlett
+</title>
+
+    <link rel="canonical" href="/posts/my-first-r-package-openendedanalyzer/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="/css/coder.min.ac37073bc2826cd28ef57364a9fe339de7ebcb26dafc22fd832cb35cf5b1d048.css" integrity="sha256-rDcHO8KCbNKO9XNkqf4znefryyba/CL9gyyzXPWx0Eg=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="/">
+      Chris Umphlett
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/now/">Now</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">My first R package: openEndedAnalyzeR</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-12-12T00:00:00Z'>
+                December 12, 2019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              8 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="/tags/r/">R</a>
+      <span class="separator">•</span>
+    <a href="/tags/text-mining/">text mining</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+
+<p>Recently I created my first R package and deployed it to GitHub. I developed it as part of my work at Consumers Energy, working with survey data frequently to help improve customer experience. Below is the vignette that I have created to document the basic usage of the package.</p>
+<p><code>openEndedAnalyzeR</code> enables fast, pre-packaged analysis of qualitative survey responses (“open-ended” or “verbatims”). It is built on the framework of the <code>tidytext</code> package. It combines <code>tidytext</code> functionality for text mining with <code>tidyverse</code> data manipulation to lower the barrier of entry to text mining for beginning R users.</p>
+<div id="usage" class="section level2">
+<h2>Usage</h2>
+<p>The package contains three types of functions:</p>
+<ol style="list-style-type: decimal">
+<li>Tidying: These functions prepare the survey data for analysis. You should always start an analysis with <code>tidy_verbatim()</code>, turning the survey responses into a tidy bag-of-phrases.</li>
+<li>Pre-packaged analysis: As analysis methods are identified that may be useful in more than one context, and can be generalized, functions will be created to enable others to create canned analysis outputs. At the launch of the package two methods were available: <code>create_phraseclouds()</code> and <code>quantify_verbatim()</code>.</li>
+<li>Intermediate analysis prep: These functions apply additional processing to the tidy data before being utilized for analysis (pre-packaged, or customized by the user). Presently this is the <code>response_sentiment()</code> function.</li>
+</ol>
+</div>
+<div id="suggested-workflow" class="section level2">
+<h2>Suggested workflow</h2>
+<p>One should always start with <code>tidy_verbatim()</code> to obtain a tidy bag-of-phrases. Bag-of-words is a text mining term meaning that a body of text is turned into a list of all of the words in the text. I use the term bag-of-phrases because <code>tidy_verbatim()</code> allows the user to specify the number of words in each phrase (also known as an <em>n-gram</em>).</p>
+<p>For users with more advanced R skills or need to perform a very custom analysis, they may stop at this point and write their own code. Otherwise the next step is to pass the <code>tidy_verbatim()</code> output into one of the analysis functions.</p>
+<p>This is not necessarily a linear process. <code>openEndedAnalyzeR</code> does create report-worthy visuals but is also helpful for exploratory analysis. You might start with uni-grams (single words), do analysis, and then desire to see more context for particular words. Then you would start over, creating a bag-of-phrases with tri-grams (three words), repeating the analysis.</p>
+</div>
+<div id="example-analysis-on-bloomington-in-community-survey-data" class="section level2">
+<h2>Example analysis on Bloomington, IN Community Survey data</h2>
+<p>This vignette will analyze the <code>bloom_survey</code> data frame included with the package. This data frame contains responses to a survey that the city of Bloomington, IN conducted in 2017. It contains mostly quantitative questions with two qualitative questions at the end: What is the thing you like the least/most about Bloomington? The vignette will demonstrate the package’s functions on these two questions.</p>
+<p>Here is a preview of the data, with unnecessary columns removed and columns re-named:</p>
+<pre class="r"><code>bloom_survey2 &lt;- bloom_survey %&gt;% 
+  mutate(id = as.character(id)) %&gt;%
+  select(id, q3a, q3b, q19, q20, q19verb, q20verb) %&gt;%
+  rename(recommend_living = q3a, remain_five_years = q3b, like_least_code = q19, like_most_code = q20, like_least_verb = q19verb, like_most_verb = q20verb)
+
+
+head(bloom_survey2)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">id</th>
+<th align="right">recommend_living</th>
+<th align="right">remain_five_years</th>
+<th align="right">like_least_code</th>
+<th align="right">like_most_code</th>
+<th align="left">like_least_verb</th>
+<th align="left">like_most_verb</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">1</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">6</td>
+<td align="left">Gap between stated goal to provide transportation alternatives to cars and the reality of poorly maintained sidewalks intersections unsafe for pedestrians, and under-funding of bike/ped. infrastructure.</td>
+<td align="left">Compact urban form around campus &amp; downtown.</td>
+</tr>
+<tr class="even">
+<td align="left">2</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">2</td>
+<td align="left">Lack of affordable housing/ homelessness.</td>
+<td align="left">Trails.</td>
+</tr>
+<tr class="odd">
+<td align="left">3</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="left">Lack of good, affordable housing.</td>
+<td align="left">A liberal oasis in a far right state.</td>
+</tr>
+<tr class="even">
+<td align="left">4</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">5</td>
+<td align="right">NA</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">Being bothered by panhandlers downtown.</td>
+<td align="left">Educational &amp; cultural opportunities.</td>
+</tr>
+<tr class="even">
+<td align="left">6</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="left">Over-saturation of student housing downtown: the city feels like a dorm.</td>
+<td align="left">Sense of vitality &amp; community.</td>
+</tr>
+</tbody>
+</table>
+<div id="create-tidy-bag-of-phrases" class="section level3">
+<h3>Create tidy bag-of-phrases</h3>
+<p>I create unigram and trigram phrases here, and summarize the top six phrases by count. Stop words are not yet removed for the unigrams and so only useless words are shown. The analysis functions will remove the stop words (or allow the user to choose to leave them).</p>
+<p>The function automatically removes blank survey responses (which would be <code>NA</code>). In the case of this data a string “na” was already in the data which forced me to filter it out.</p>
+<pre class="r"><code>selected_cols &lt;- c(&quot;like_least_verb&quot;, &quot;like_most_verb&quot;)
+tidy_verbatims1 &lt;- tidy_verbatim(bloom_survey2, n = 1) %&gt;%
+  filter(phrase != &quot;na&quot;)
+head(tidy_verbatims1)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">id</th>
+<th align="left">column_nm</th>
+<th align="left">phrase</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">1</td>
+<td align="left">like_least_verb</td>
+<td align="left">gap</td>
+</tr>
+<tr class="even">
+<td align="left">1</td>
+<td align="left">like_least_verb</td>
+<td align="left">between</td>
+</tr>
+<tr class="odd">
+<td align="left">1</td>
+<td align="left">like_least_verb</td>
+<td align="left">stated</td>
+</tr>
+<tr class="even">
+<td align="left">1</td>
+<td align="left">like_least_verb</td>
+<td align="left">goal</td>
+</tr>
+<tr class="odd">
+<td align="left">1</td>
+<td align="left">like_least_verb</td>
+<td align="left">to</td>
+</tr>
+<tr class="even">
+<td align="left">1</td>
+<td align="left">like_least_verb</td>
+<td align="left">provide</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>tidy_verbatims1 %&gt;% group_by(phrase) %&gt;% summarise(phrase_count = n()) %&gt;% arrange(-phrase_count) %&gt;% head</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">phrase</th>
+<th align="right">phrase_count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">the</td>
+<td align="right">423</td>
+</tr>
+<tr class="even">
+<td align="left">of</td>
+<td align="right">349</td>
+</tr>
+<tr class="odd">
+<td align="left">to</td>
+<td align="right">239</td>
+</tr>
+<tr class="even">
+<td align="left">and</td>
+<td align="right">230</td>
+</tr>
+<tr class="odd">
+<td align="left">a</td>
+<td align="right">129</td>
+</tr>
+<tr class="even">
+<td align="left">is</td>
+<td align="right">125</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>
+tidy_verbatims3 &lt;- tidy_verbatim(bloom_survey2, n = 3)
+head(tidy_verbatims3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">id</th>
+<th align="left">column_nm</th>
+<th align="left">phrase</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">1</td>
+<td align="left">like_least_verb</td>
+<td align="left">gap between stated</td>
+</tr>
+<tr class="even">
+<td align="left">1</td>
+<td align="left">like_least_verb</td>
+<td align="left">between stated goal</td>
+</tr>
+<tr class="odd">
+<td align="left">1</td>
+<td align="left">like_least_verb</td>
+<td align="left">stated goal to</td>
+</tr>
+<tr class="even">
+<td align="left">1</td>
+<td align="left">like_least_verb</td>
+<td align="left">goal to provide</td>
+</tr>
+<tr class="odd">
+<td align="left">1</td>
+<td align="left">like_least_verb</td>
+<td align="left">to provide transportation</td>
+</tr>
+<tr class="even">
+<td align="left">1</td>
+<td align="left">like_least_verb</td>
+<td align="left">provide transportation alternatives</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>tidy_verbatims3 %&gt;% group_by(phrase) %&gt;% summarise(phrase_count = n()) %&gt;% arrange(-phrase_count) %&gt;% head</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">phrase</th>
+<th align="right">phrase_count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">sense of community</td>
+<td align="right">19</td>
+</tr>
+<tr class="even">
+<td align="left">the lack of</td>
+<td align="right">13</td>
+</tr>
+<tr class="odd">
+<td align="left">a lot of</td>
+<td align="right">12</td>
+</tr>
+<tr class="even">
+<td align="left">i like the</td>
+<td align="right">9</td>
+</tr>
+<tr class="odd">
+<td align="left">things to do</td>
+<td align="right">9</td>
+</tr>
+<tr class="even">
+<td align="left">quality of life</td>
+<td align="right">8</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="looking-for-topics-with-phrase-clouds" class="section level3">
+<h3>Looking for topics with phrase clouds</h3>
+<p>The two questions from this survey were coded by researchers and put into groups. How well can we identify broad topics using the package without manually reading the responses? The <code>create_phraseclouds()</code> function counts the frequency of phrases and produces a phrasecloud. It includes several parameters to allow you to control the size of the cloud (eg, top x% of phrases, max # of phrases, min # of phrases). Reasonable defaults are used if nothing is changed.</p>
+<p>After creating phrase clouds for each question, and n-gram, I have briefly reviewed the visual and noted topics that emerge.</p>
+<p><strong>NOTE</strong>: RStudio will often give warnings when creating wordclouds because the plot area is not large enough to display everything. Within this code chunk I have set the height and width of plots to 10 inches. <strong>Pay attention to the warnings when you run this function!</strong> Ultimately the easiest way to make sure you get everything is to write the wordcloud out to an external file and give it plenty of space.</p>
+<div id="tri-gram-cloud-topics" class="section level4">
+<h4>Tri-gram cloud topics</h4>
+<pre class="r"><code>create_phraseclouds(tidy_verbatims3, max_phrases = 50)</code></pre>
+<p><img src="/posts/2019-12-12-my-first-r-package-openendedanalyzer_files/figure-html/phraseclouds3-1.png" width="960" /><img src="/posts/2019-12-12-my-first-r-package-openendedanalyzer_files/figure-html/phraseclouds3-2.png" width="960" /></p>
+<p><strong>Least like</strong></p>
+<ul>
+<li>Housing options</li>
+<li>Parking</li>
+<li>Recycling</li>
+</ul>
+<p><strong>Most like</strong></p>
+<ul>
+<li>Small-town feel/sense of community/friendliness</li>
+<li>Outdoor activities (parks, trails)</li>
+<li>Quality of life related</li>
+<li>Diversity</li>
+<li>Entertainment options</li>
+</ul>
+</div>
+<div id="unigram-cloud-topics" class="section level4">
+<h4>Unigram cloud topics</h4>
+<pre class="r"><code>create_phraseclouds(tidy_verbatims1, max_phrases = 50)</code></pre>
+<p><img src="/posts/2019-12-12-my-first-r-package-openendedanalyzer_files/figure-html/phraseclouds1-1.png" width="960" /><img src="/posts/2019-12-12-my-first-r-package-openendedanalyzer_files/figure-html/phraseclouds1-2.png" width="960" /></p>
+<p><strong>Least like</strong> (new information in <em>italics</em>)</p>
+<ul>
+<li>Housing options</li>
+<li>Parking</li>
+<li>Recycling</li>
+<li><em>Homelessness</em></li>
+<li><em>Public safety</em></li>
+<li><em>Transportation issues</em></li>
+<li><em>Job opportunities</em></li>
+<li><em>Presence of university</em></li>
+</ul>
+<p><strong>Most like</strong></p>
+<ul>
+<li>Small-town feel/sense of community/friendliness</li>
+<li>Outdoor activities (parks, trails)</li>
+<li>Quality of life related</li>
+<li>Diversity</li>
+<li>Entertainment options</li>
+<li><em>Presence of university</em></li>
+</ul>
+</div>
+<div id="how-does-this-compare-to-the-researchers-manual-analysis" class="section level4">
+<h4>How does this compare to the researchers’ manual analysis?</h4>
+<p>Per the report prepared by National Research Center Inc, the verbatims were all analyzed and coded into topics. If a response spanned more than one topic the researchers assigned it to the first one mentioned (p63 of the <a href="https://catalog.data.gov/dataset/community-survey/resource/d66aa529-90c0-4f05-a65f-75f9090cb2bb">NRC report</a>). The plots below show the topics created and count of surveys each was assigned to:</p>
+<p><img src="/posts/2019-12-12-my-first-r-package-openendedanalyzer_files/figure-html/manual_coding-1.png" width="672" /></p>
+<p>I identified eight topics in the least like question and six in the most like question. The researchers identified eight in each, excluding Other and Don’t know. They grouped the responses differently and made the categories more specific, probably at least in part due to knowing more about the full context of each response.</p>
+<p>That said, my review of the phrase clouds yielded a rough equivalent for at least six of the topics in each question.</p>
+<p>If one wanted to classify each response into a topic, this could be used as a starting point for at least two different methods:</p>
+<ul>
+<li>Unsupervised clustering: Utilize six/four as the k in k-modes clustering. The tidy data would need to be tranposed and turned into dummies so that the data was structured as one row per survey, one column per phrase. This is done easily with the <code>tidyr</code> and <code>fastDummies</code> packages.</li>
+<li>Supervised classification: Using these topics create a case_when argument to classify responses that have one of the most-common phrases from the cloud. Responses with these phrases will be used to train the model to classify responses without these phrases. Any response where the predicted probabilities are all below a threshold (for example, if none of the topics have a probability over 0.5) would be placed into an “Other” topic.</li>
+</ul>
+</div>
+</div>
+<div id="quantify-verbatims" class="section level3">
+<h3>Quantify verbatims</h3>
+<p>Many surveys, including the Bloomington community survey, combine quantitative and qualitative questions. When verbatims are utilized to allow a customer to help explain why they gave a particular numeric response the analyst has to sort through many responses and look for common themes related to good/bad numeric scores.</p>
+<p>The <code>quantify_verbatim()</code> function aims to help with this. It performs a regression of all unique n-grams in a qualitative response on the numeric scores of a quantitative question.</p>
+<p>This should be used, and interpreted, carefully. <strong>Spurious associations will likely be identified if you just start throwing random combinations of questions against the wall!</strong></p>
+<p>The Bloomington data is not a great example for this. The way they split into two questions, what thing do you like least/most, already allows one to understand the direction of the association. For example, with “recycling” showing up frequently in the least liked question, we know that something related to recycling is a negative for the city’s residents.</p>
+<p>Consider this as a limited demonstration of how the function works, and the output it produces but not necessarily a scenario in which it should be used.</p>
+<p>A question about one’s likelihood to recommend that others live in Bloomington is used as the quantitative response, with the likelihood one will stay living in Bloomington for five years as an optional regressor. The response options are on what is to me a strange scale: 1 to 4, with 1 as very likely and 4 as very unlikely; and 5 representing Don’t know. For this reason I converted the 5’s to 2.5 to try and place them more in a more reasonable place on a continuous scale.</p>
+<p>Coefficient estimates and intervals colored red have a statistical significance below an alpha of 0.1. Then as the points get lighter the p-values get further from alpha.</p>
+<pre class="r"><code>adjusted_verbatim &lt;- bloom_survey2 %&gt;%
+  mutate(recommend_living = if_else(recommend_living == 5, 2.5, recommend_living),
+         remain_five_years = if_else(remain_five_years == 5, 2.5, remain_five_years))
+
+quantify_verbatim(adjusted_verbatim, tidy_verbatims3, quant_var = &quot;recommend_living&quot;, xreg = c(&quot;remain_five_years&quot;))</code></pre>
+<p><img src="/posts/2019-12-12-my-first-r-package-openendedanalyzer_files/figure-html/quantify-1.png" width="672" /><img src="/posts/2019-12-12-my-first-r-package-openendedanalyzer_files/figure-html/quantify-2.png" width="672" /></p>
+</div>
+</div>
+
+      </div>
+
+      <footer>
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>A part of good science is to see what everyone else can see but to think what no one else has ever said. ~ Amos Tversky</p>
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+       · 
+      [<a href="https://github.com/luizdepra/hugo-coder/tree/"></a>]
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-124691894-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>

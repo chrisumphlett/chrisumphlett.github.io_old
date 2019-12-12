@@ -6,10 +6,20 @@
     <description>Recent content in Posts on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sun, 27 Oct 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 12 Dec 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>My first R package: openEndedAnalyzeR</title>
+      <link>/posts/my-first-r-package-openendedanalyzer/</link>
+      <pubDate>Thu, 12 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/my-first-r-package-openendedanalyzer/</guid>
+      <description>Recently I created my first R package and deployed it to GitHub. I developed it as part of my work at Consumers Energy, working with survey data frequently to help improve customer experience. Below is the vignette that I have created to document the basic usage of the package.
+openEndedAnalyzeR enables fast, pre-packaged analysis of qualitative survey responses (“open-ended” or “verbatims”). It is built on the framework of the tidytext package.</description>
+    </item>
     
     <item>
       <title>Sentiment analysis of online screen capture reviews with R and tidytext</title>
