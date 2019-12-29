@@ -228,9 +228,9 @@ There were many questions I would have asked if I could have spoken to someone w
       
       <guid>/now/</guid>
       <description>Inspired by nownownow.com.
-updated 2019-10-26
-Listed below are categories that show what I&amp;rsquo;m spending most of my time doing. Ultimately, I am attempting to align these with my current vision for my career: To live in the intersection of data science and behavioral economics/decision science&amp;ndash; to be a data-driven decision scientist.
-Current projects (Work @ Consumers Energy)  Modeling customer experience during power outages as a function of the characteristics of the outage, weather, customers&amp;rsquo; recent experience with outages, notifications sent to customer, and estimated restoration time.</description>
+updated 2019-12-28
+Listed below are categories that show what I&amp;rsquo;m spending most of my time doing.
+Current projects (Work @ Techsmith)  I am still onboarding &amp;ndash; learning about the company and its products.  Current projects (Personal)  Creating R package for calculation of popular marketing metrics. Currently in development, should have available on Github shortly and hope to get it on CRAN within a couple months.</description>
     </item>
     
     <item>
@@ -249,7 +249,7 @@ Current projects (Work @ Consumers Energy)  Modeling customer experience during 
       
       <guid>/about/</guid>
       <description>Current Resume
-When I began my career in the analytics space in 2011 it seemed important to me to gain specific, specialized knowledge in certain areas. I had previously been a &amp;ldquo;jack-of-all-trades, master of none&amp;rdquo; kind of guy and that was not where I wanted to be professionally. Business analytics became that area of focus but after eight years I know now that once you gain a certain competency in data analytics you realize that they are innumerable subdomains; I am now, once again, somewhat of a jack-of-all-trades.</description>
+I live in Lansing, Michigan and have been in various positions within the data analytics realm. In December 2019 I moved to a new role at Techsmith, developers of Snagit and Camtasia software, as Manager of Data Analysis. Prior to that I worked on a contract basis as a data scientist with Consumers Energy, a gas and electric utility. I worked with their Customer Data Analytics team. From 2012 - Sept 2018 I worked as an analyst at Jackson National Life.</description>
     </item>
     
   </channel>
