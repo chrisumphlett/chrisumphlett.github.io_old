@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Chris Umphlett">
+    <meta name="description" content="Chris Umphlett&#39;s personal website">
+    <meta name="keywords" content="data science,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="marketr package released to CRAN"/>
+<meta name="twitter:description" content="For the last few months I have been working on turning some previous work into an R package marketr. I needed to learn a quite a bit to develop it as a working package posted to GitHub; and in turn, do even more to get it on to CRAN. Once you understand the end product there are a lot of things I could have done differently in the development to help next time."/>
+
+
+    <base href="/posts/marketr-package-released-to-cran/">
+    <title>
+  marketr package released to CRAN · Chris Umphlett
+</title>
+
+    <link rel="canonical" href="/posts/marketr-package-released-to-cran/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="/css/coder.min.ac37073bc2826cd28ef57364a9fe339de7ebcb26dafc22fd832cb35cf5b1d048.css" integrity="sha256-rDcHO8KCbNKO9XNkqf4znefryyba/CL9gyyzXPWx0Eg=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="/">
+      Chris Umphlett
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/now/">Now</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">marketr package released to CRAN</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2020-02-15T00:00:00Z'>
+                February 15, 2020
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              5 minutes read
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        
+
+
+<p>For the last few months I have been working on turning some previous work into an R package <code>marketr</code>. I needed to learn a quite a bit to develop it as a working package posted to GitHub; and in turn, do even more to get it on to CRAN. Once you understand the end product there are a lot of things I could have done differently in the development to help next time.</p>
+<p><code>devtools</code> package gives a lot of great feedback to prepare you for CRAN submission. I ended up submitting to CRAN and only having to make some fairly minor changes to then get acceptance of the package in my second submission.</p>
+<p>I developed the code behind <code>marketr</code> in order to save myself time when doing ad hoc calculations of marketing metrics along different dimensions. My team at that time had some standard hierarchical reporting but we were supplementing that with analysis of other slices of the data— going deeper, or grouping by multiple dimensions. <code>marketr</code> allows me to quickly do these calculations with whatever combination of dimensions I specify.</p>
+<p>Putting it into a package helped ensure consistency of calculation, especially for others who were inexperienced R users. They no longer needed to try and adapt my code, or have the possibility of the calculation being incorrect. <code>marketr</code> is useful regardless of your speed or experience with R if you are working with these metrics.</p>
+<p>Below I’ve adapted some of the material from the README and vignette to explain what the package does and show how it does it. Visit the <a href="https://github.com/chrisumphlett/marketr">GitHub</a> to learn more or contribute.</p>
+<div id="introduction-to-marketr" class="section level2">
+<h2>Introduction to marketr</h2>
+<p><code>marketr</code> facilitates tidy calculation of popular quantitative marketing metrics (like Customer Experience Index and Net Promoter Score). By “tidy”, I am referring to the usage of the tidyverse packages and methodology for organizing and analyzing data. The package is designed so that beginning R users can calculate these metrics, along many dimensions, without needing to learn much R syntax. It is also helpful for more experienced programmers to do these calculations quickly.</p>
+</div>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p><code>install.packages("marketr")</code> provides the current verision from CRAN.</p>
+<p>The development version can be installed from GitHub: <code>devtools::install_github("chrisumphlett/marketr")</code>.</p>
+</div>
+<div id="generate-survey-response-data" class="section level2">
+<h2>Generate survey response data</h2>
+<p>To demonstrate the basic usage I will create simulated survey response data. <code>needs</code>, <code>ease</code> and <code>emotion</code> are the columns that make up CXi; <code>nps_question</code> is used for NPS; <code>grps</code> and <code>months</code> will show how these metrics can be calculated along categorical features and/or trended over time.</p>
+<pre class="r"><code>library(marketr)
+library(dplyr)</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.5.3</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>library(magrittr)
+library(ggplot2)
+
+needs &lt;- sample(2:5, 1000, replace = T)
+ease &lt;- sample(2:5, 1000, replace = T)
+emotion &lt;- sample(2:5, 1000, replace = T)
+nps_question &lt;- sample(3:10, 1000, replace = T)
+grps &lt;- c(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;)
+months &lt;- sample(1:12, 1000, replace = T)
+
+survey_data &lt;- tibble::as_tibble(cbind(needs, ease, emotion, nps_question, grps, months)) %&gt;%
+  mutate(month = as.numeric(months))</code></pre>
+<pre><code>## Warning in cbind(needs, ease, emotion, nps_question, grps, months): number
+## of rows of result is not a multiple of vector length (arg 5)</code></pre>
+<pre class="r"><code>head(survey_data)</code></pre>
+<pre><code>## # A tibble: 6 x 7
+##   needs ease  emotion nps_question grps  months month
+##   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt;  &lt;dbl&gt;
+## 1 5     3     4       7            a     4          4
+## 2 5     2     5       5            b     9          9
+## 3 2     4     4       6            c     11        11
+## 4 3     3     4       5            a     1          1
+## 5 4     2     3       3            b     5          5
+## 6 2     2     2       10           c     9          9</code></pre>
+</div>
+<div id="calculating-cxi" class="section level2">
+<h2>Calculating CXi</h2>
+<p><em>Customer Experience Index</em> (CXI) was <a href="https://go.forrester.com/analytics/cx-index/">developed by Forrester</a>. Per Forrester, CXi “measures how successfully a company delivers customer experiences that create and sustain loyalty.”</p>
+<p>It involves scoring three questions, each with a likert scale response, and then averaging those scores together. Below, four calculations are done using two different functions.</p>
+<pre class="r"><code># Overall CXi
+cxi_calc(survey_data) %&gt;% knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">cxi</th>
+<th align="right">survey_count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">27.1</td>
+<td align="right">1000</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>## CXi by group
+cxi_calc(survey_data, grps, cx_high = 4, cx_low = 2) %&gt;% knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">grps</th>
+<th align="right">cxi</th>
+<th align="right">survey_count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">a</td>
+<td align="right">28.24351</td>
+<td align="right">334</td>
+</tr>
+<tr class="even">
+<td align="left">b</td>
+<td align="right">25.72573</td>
+<td align="right">333</td>
+</tr>
+<tr class="odd">
+<td align="left">c</td>
+<td align="right">27.32733</td>
+<td align="right">333</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Overall CXi trend
+cxi_trend(survey_data, month) %&gt;% knitr::kable() </code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">avg_survey_ct</th>
+<th align="right">min_survey_ct</th>
+<th align="right">month</th>
+<th align="right">cxi</th>
+<th align="right">survey_count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">1</td>
+<td align="right">31.22807</td>
+<td align="right">95</td>
+</tr>
+<tr class="even">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">2</td>
+<td align="right">24.67532</td>
+<td align="right">77</td>
+</tr>
+<tr class="odd">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">3</td>
+<td align="right">34.22222</td>
+<td align="right">75</td>
+</tr>
+<tr class="even">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">4</td>
+<td align="right">22.94372</td>
+<td align="right">77</td>
+</tr>
+<tr class="odd">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">5</td>
+<td align="right">27.23577</td>
+<td align="right">82</td>
+</tr>
+<tr class="even">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">6</td>
+<td align="right">34.64912</td>
+<td align="right">76</td>
+</tr>
+<tr class="odd">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">7</td>
+<td align="right">23.68421</td>
+<td align="right">76</td>
+</tr>
+<tr class="even">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">8</td>
+<td align="right">17.25490</td>
+<td align="right">85</td>
+</tr>
+<tr class="odd">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">9</td>
+<td align="right">21.83908</td>
+<td align="right">87</td>
+</tr>
+<tr class="even">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">10</td>
+<td align="right">26.38889</td>
+<td align="right">96</td>
+</tr>
+<tr class="odd">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">11</td>
+<td align="right">35.77236</td>
+<td align="right">82</td>
+</tr>
+<tr class="even">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">12</td>
+<td align="right">26.08696</td>
+<td align="right">92</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Overall CXi trend by group - plotted
+cxi_trend(survey_data, month, grps, cx_high = 4, cx_low = 2, min_surveys = 1, avg_surveys = 0) %&gt;% 
+  ggplot(aes(x = month, y = cxi)) +
+  geom_line() +
+  facet_wrap(grps ~ ., nrow = 3)</code></pre>
+<pre><code>## Joining, by = &quot;grps&quot;Joining, by = &quot;grps&quot;</code></pre>
+<p><img src="/posts/2020-02-15-marketr-package-released-to-cran_files/figure-html/cxi-1.png" width="576" /></p>
+</div>
+<div id="calculating-nps" class="section level2">
+<h2>Calculating NPS</h2>
+<p><em>Net Promoter Score</em> (NPS) was originally developed by Fred Reichheld and now is owned by <a href="https://www.netpromoter.com/">Bain Company and Satmetrix Systems</a>. The <a href="https://en.wikipedia.org/wiki/Net_Promoter">Wikipedia page</a> is another good source of information. According to Wikipedia it “is a management tool that can be used to gauge the loyalty of a firm’s customer relationships.”</p>
+<p>The calculation requires a single question with a ten-point scale. Like CXi it is not difficult to do manually; the package enables deeper analysis.Below, four calculations are done using two different functions.</p>
+<pre class="r"><code># Overall NPS
+nps_calc(survey_data) %&gt;% knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">nps</th>
+<th align="right">survey_count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">-49</td>
+<td align="right">1000</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>## NPS by group
+nps_calc(survey_data, grps) %&gt;% knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">grps</th>
+<th align="right">nps</th>
+<th align="right">survey_count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">a</td>
+<td align="right">-50.29940</td>
+<td align="right">334</td>
+</tr>
+<tr class="even">
+<td align="left">b</td>
+<td align="right">-43.54354</td>
+<td align="right">333</td>
+</tr>
+<tr class="odd">
+<td align="left">c</td>
+<td align="right">-53.15315</td>
+<td align="right">333</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Overall NPS trend
+nps_trend(survey_data, month) %&gt;% knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">avg_survey_ct</th>
+<th align="right">min_survey_ct</th>
+<th align="right">month</th>
+<th align="right">nps</th>
+<th align="right">survey_count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">1</td>
+<td align="right">-49.47368</td>
+<td align="right">95</td>
+</tr>
+<tr class="even">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">2</td>
+<td align="right">-49.35065</td>
+<td align="right">77</td>
+</tr>
+<tr class="odd">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">3</td>
+<td align="right">-49.33333</td>
+<td align="right">75</td>
+</tr>
+<tr class="even">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">4</td>
+<td align="right">-49.35065</td>
+<td align="right">77</td>
+</tr>
+<tr class="odd">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">5</td>
+<td align="right">-47.56098</td>
+<td align="right">82</td>
+</tr>
+<tr class="even">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">6</td>
+<td align="right">-44.73684</td>
+<td align="right">76</td>
+</tr>
+<tr class="odd">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">7</td>
+<td align="right">-55.26316</td>
+<td align="right">76</td>
+</tr>
+<tr class="even">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">8</td>
+<td align="right">-55.29412</td>
+<td align="right">85</td>
+</tr>
+<tr class="odd">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">9</td>
+<td align="right">-45.97701</td>
+<td align="right">87</td>
+</tr>
+<tr class="even">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">10</td>
+<td align="right">-56.25000</td>
+<td align="right">96</td>
+</tr>
+<tr class="odd">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">11</td>
+<td align="right">-35.36585</td>
+<td align="right">82</td>
+</tr>
+<tr class="even">
+<td align="right">83.33333</td>
+<td align="right">75</td>
+<td align="right">12</td>
+<td align="right">-48.91304</td>
+<td align="right">92</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Overall NPS trend by group - plotted
+nps_trend(survey_data, month, grps, min_surveys = 1, avg_surveys = 0) %&gt;% 
+  ggplot(aes(x = month, y = nps)) +
+  geom_line() +
+  facet_wrap(grps ~ ., nrow = 3)</code></pre>
+<pre><code>## Joining, by = &quot;grps&quot;Joining, by = &quot;grps&quot;</code></pre>
+<p><img src="/posts/2020-02-15-marketr-package-released-to-cran_files/figure-html/NPS-1.png" width="576" /></p>
+</div>
+
+      </div>
+
+      <footer>
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>A part of good science is to see what everyone else can see but to think what no one else has ever said. ~ Amos Tversky</p>
+    
+     © 2020
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+       · 
+      [<a href="https://github.com/luizdepra/hugo-coder/tree/"></a>]
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-124691894-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>
