@@ -237,9 +237,9 @@ There were many questions I would have asked if I could have spoken to someone w
       
       <guid>/now/</guid>
       <description>Inspired by nownownow.com.
-updated 2019-12-28
+updated 2019-02-16
 Listed below are categories that show what I&amp;rsquo;m spending most of my time doing.
-Current projects (Work @ Techsmith)  I am still onboarding &amp;ndash; learning about the company and its products.  Current projects (Personal)  Creating R package for calculation of popular marketing metrics. Currently in development, should have available on Github shortly and hope to get it on CRAN within a couple months.</description>
+Current projects (Work @ Techsmith)  Centralizing and automating collection of data from vendor systems to build in-house data library. Clustering usage patterns of desktop products. Various work with Google Analytics &amp;amp; E-Commerce data. Improving surveying methodology to create less-biased and more metadata-rich data sets.  Current projects (Personal)  Just finished first version of R package, marketr, and had it published to CRAN.</description>
     </item>
     
     <item>
