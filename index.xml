@@ -6,10 +6,20 @@
     <description>Recent content on Chris Umphlett</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 15 Feb 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 21 Mar 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>revulyticsR: Connect To Your Revulytics Data With R!</title>
+      <link>/posts/revulyticsr-connect-to-your-revulytics-data-with-r/</link>
+      <pubDate>Sat, 21 Mar 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/revulyticsr-connect-to-your-revulytics-data-with-r/</guid>
+      <description>I have just finished the first development version of a new R package, revulyticsR. It facilitates making a connection to the Revulytics API and executing various queries. You can use it to get active users (daily, monthly, etc) and (eventually) to query on various advanced events and get the results in tidy data frames.
+Revulytics is a provider of usage analytics and in-product messaging software. My company, TechSmith, utilizes it in our desktop products.</description>
+    </item>
     
     <item>
       <title>marketr package released to CRAN</title>

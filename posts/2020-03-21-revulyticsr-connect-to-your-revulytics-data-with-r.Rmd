@@ -1,0 +1,20 @@
+---
+title: 'revulyticsR: Connect To Your Revulytics Data With R!'
+author: Chris Umphlett
+date: '2020-03-21'
+slug: revulyticsr-connect-to-your-revulytics-data-with-r
+categories: []
+tags:
+  - R
+description: ''
+externalLink: ''
+---
+
+I have just finished the first [development version of a new R package, revulyticsR](https://github.com/chrisumphlett/revulyticsR). It facilitates making a connection to the Revulytics API and executing various queries. You can use it to get active users (daily, monthly, etc) and (eventually) to query on various advanced events and get the results in tidy data frames.
+
+[Revulytics](https://www.revulytics.com/) is a provider of usage analytics and in-product messaging software. My company, [TechSmith](https://www.techsmith.com/), utilizes it in our desktop products. You know how you get a message asking if we can anonymously track usage statistics in order to improve the product? That is done with Revulytics. And it really does help TechSmith help customers. For instance, we can learn that many users are still on an old version of Snagit and we push out bug fixes long after other companies may have abandoned a version released years earlier. We can also send messages to users to suggest how they can use a new feature in a way that will simplify their workflow.
+
+The development version can be installed from GitHub: devtools::install_github("chrisumphlett/revulyticsR"). At this point the package provides the ability to authenticate and get daily/weekly/monthly active users. I will be adding event data in the future.
+
+Sample code is available at the GitHub repo and in the package documentation. Unfortunately I cannot provide test code that others can run as the authentication process relies on TechSmith credentials. If you are a Revulytics customer and you run into issues let me know.
+
