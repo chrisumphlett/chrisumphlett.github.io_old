@@ -247,9 +247,9 @@ There were many questions I would have asked if I could have spoken to someone w
       
       <guid>/now/</guid>
       <description>Inspired by nownownow.com.
-updated 2020-06-06
+updated 2020-07-05
 Listed below are categories that show what I&amp;rsquo;m spending most of my time doing.
-Current projects (Work @ Techsmith)  Centralizing and automating collection of data from vendor systems to build in-house data library. I am creating multiple R packages to facilitate connecting to APIs when there does not yet exist an R package to connect to a particular system. Packages ibmAcousticR and revulyticsR are or soon will be published to the CRAN R repository.</description>
+Current projects (Work @ Techsmith)  Centralizing and automating collection of data from vendor systems to build in-house data library. I am creating multiple R packages to facilitate connecting to APIs when there does not yet exist an R package to connect to a particular system. Packages ibmAcousticR and revulyticsR were published to the CRAN R repository from April to June and now I am adding more planned features.</description>
     </item>
     
     <item>
